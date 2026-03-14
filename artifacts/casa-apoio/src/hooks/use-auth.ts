@@ -6,6 +6,7 @@ export interface AuthUser {
   firstName: string | null;
   lastName: string | null;
   profileImageUrl: string | null;
+  role: string;
 }
 
 interface AuthState {
@@ -13,7 +14,6 @@ interface AuthState {
   isLoading: boolean;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<{ error?: string }>;
-  register: (data: { email: string; password: string; firstName?: string; lastName?: string }) => Promise<{ error?: string }>;
   logout: () => Promise<void>;
 }
 
@@ -71,28 +71,6 @@ export function useAuth(): AuthState {
     }
   }, []);
 
-  const register = useCallback(async (data: { email: string; password: string; firstName?: string; lastName?: string }) => {
-    try {
-      const res = await fetch(`${BASE}/api/auth/register`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify(data),
-      });
-
-      const result = await res.json();
-
-      if (!res.ok) {
-        return { error: result.error || "Erro ao criar conta" };
-      }
-
-      setUser(result.user);
-      return {};
-    } catch {
-      return { error: "Erro de conexão. Tente novamente." };
-    }
-  }, []);
-
   const logout = useCallback(async () => {
     await fetch(`${BASE}/api/auth/logout`, {
       method: "POST",
@@ -106,7 +84,6 @@ export function useAuth(): AuthState {
     isLoading,
     isAuthenticated: !!user,
     login,
-    register,
     logout,
   };
 }

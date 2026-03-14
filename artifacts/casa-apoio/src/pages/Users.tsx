@@ -8,12 +8,15 @@ import {
   ShieldCheck,
   ShieldAlert,
   Eye,
+  EyeOff,
   MoreVertical,
   UserCog,
   Trash2,
   UserCheck,
   UserX,
   Mail,
+  UserPlus,
+  Lock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -68,6 +71,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
 
 const ROLE_LABELS: Record<string, string> = {
   admin: "Administrador",
@@ -101,12 +105,22 @@ function formatDate(dateStr: string) {
 
 export function Users() {
   const { toast } = useToast();
+  const { user: currentUser } = useAuth();
+  const isAdmin = currentUser?.role === "admin";
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterRole, setFilterRole] = useState<string>("all");
   const [editUser, setEditUser] = useState<any | null>(null);
   const [editRole, setEditRole] = useState("");
   const [deleteUserId, setDeleteUserId] = useState<string | null>(null);
+  const [showCreate, setShowCreate] = useState(false);
+  const [newEmail, setNewEmail] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [newFirstName, setNewFirstName] = useState("");
+  const [newLastName, setNewLastName] = useState("");
+  const [newRole, setNewRole] = useState("staff");
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [createError, setCreateError] = useState("");
 
   const { data: users = [], isLoading } = useListUsers();
 
@@ -120,6 +134,28 @@ export function Users() {
       onError: () => {
         toast({ title: "Erro ao atualizar usuário", variant: "destructive" });
       },
+    },
+  });
+
+  const createMutation = useMutation({
+    mutationFn: async (data: { email: string; password: string; firstName: string; lastName: string; role: string }) => {
+      const res = await fetch(`${import.meta.env.BASE_URL}api/users`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(data),
+      });
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error || "Erro ao criar usuário");
+      return result;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/users"] });
+      toast({ title: "Usuário criado com sucesso!" });
+      resetCreateForm();
+    },
+    onError: (err: Error) => {
+      setCreateError(err.message);
     },
   });
 
@@ -181,10 +217,33 @@ export function Users() {
     deleteMutation.mutate({ id: deleteUserId });
   }
 
+  function resetCreateForm() {
+    setShowCreate(false);
+    setNewEmail("");
+    setNewPassword("");
+    setNewFirstName("");
+    setNewLastName("");
+    setNewRole("staff");
+    setShowNewPassword(false);
+    setCreateError("");
+  }
+
+  function handleCreateUser(e: React.FormEvent) {
+    e.preventDefault();
+    setCreateError("");
+    createMutation.mutate({
+      email: newEmail,
+      password: newPassword,
+      firstName: newFirstName,
+      lastName: newLastName,
+      role: newRole,
+    });
+  }
+
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="p-2.5 bg-primary/10 rounded-xl">
             <UsersIcon className="w-6 h-6 text-primary" />
@@ -196,6 +255,12 @@ export function Users() {
             </p>
           </div>
         </div>
+        {isAdmin && (
+          <Button onClick={() => setShowCreate(true)} className="gap-2">
+            <UserPlus className="w-4 h-4" />
+            Novo Usuário
+          </Button>
+        )}
       </div>
 
       {/* Stats */}
@@ -430,6 +495,104 @@ export function Users() {
               {updateMutation.isPending ? "Salvando..." : "Salvar"}
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Create User Dialog */}
+      <Dialog open={showCreate} onOpenChange={() => resetCreateForm()}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Novo Usuário</DialogTitle>
+            <DialogDescription>
+              Cadastre um novo colaborador no sistema
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleCreateUser} className="space-y-4 py-2">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label>Nome</Label>
+                <Input
+                  placeholder="Nome"
+                  value={newFirstName}
+                  onChange={(e) => setNewFirstName(e.target.value)}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Sobrenome</Label>
+                <Input
+                  placeholder="Sobrenome"
+                  value={newLastName}
+                  onChange={(e) => setNewLastName(e.target.value)}
+                />
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <Label>E-mail</Label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  type="email"
+                  placeholder="email@exemplo.com"
+                  value={newEmail}
+                  onChange={(e) => setNewEmail(e.target.value)}
+                  className="pl-10"
+                  required
+                />
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <Label>Senha</Label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  type={showNewPassword ? "text" : "password"}
+                  placeholder="Mínimo 6 caracteres"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  className="pl-10 pr-10"
+                  required
+                  minLength={6}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowNewPassword(!showNewPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  tabIndex={-1}
+                >
+                  {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <Label>Cargo</Label>
+              <Select value={newRole} onValueChange={setNewRole}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="admin">Administrador</SelectItem>
+                  <SelectItem value="manager">Gerente</SelectItem>
+                  <SelectItem value="staff">Colaborador</SelectItem>
+                  <SelectItem value="viewer">Visualizador</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {createError && (
+              <div className="bg-destructive/10 text-destructive text-sm px-4 py-3 rounded-lg border border-destructive/20">
+                {createError}
+              </div>
+            )}
+
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={resetCreateForm}>
+                Cancelar
+              </Button>
+              <Button type="submit" disabled={createMutation.isPending}>
+                {createMutation.isPending ? "Criando..." : "Criar Usuário"}
+              </Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
 

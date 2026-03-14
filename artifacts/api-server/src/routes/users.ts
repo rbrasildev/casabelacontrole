@@ -1,4 +1,5 @@
 import { Router } from "express";
+import bcrypt from "bcryptjs";
 import { db } from "@workspace/db";
 import { usersTable } from "@workspace/db/schema";
 import { eq } from "drizzle-orm";
@@ -23,6 +24,56 @@ function formatUser(u: typeof usersTable.$inferSelect) {
     updatedAt: u.updatedAt.toISOString(),
   };
 }
+
+router.post("/", requireRole("admin"), async (req, res) => {
+  try {
+    const { email, password, firstName, lastName, role } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ error: "E-mail e senha são obrigatórios" });
+    }
+
+    if (typeof email !== "string" || !email.includes("@")) {
+      return res.status(400).json({ error: "E-mail inválido" });
+    }
+
+    if (typeof password !== "string" || password.length < 6) {
+      return res.status(400).json({ error: "A senha deve ter pelo menos 6 caracteres" });
+    }
+
+    if (role && !VALID_ROLES.includes(role)) {
+      return res.status(400).json({ error: "Cargo inválido" });
+    }
+
+    const [existing] = await db
+      .select({ id: usersTable.id })
+      .from(usersTable)
+      .where(eq(usersTable.email, email.toLowerCase().trim()))
+      .limit(1);
+
+    if (existing) {
+      return res.status(409).json({ error: "Este e-mail já está cadastrado" });
+    }
+
+    const passwordHash = await bcrypt.hash(password, 12);
+
+    const [user] = await db
+      .insert(usersTable)
+      .values({
+        email: email.toLowerCase().trim(),
+        passwordHash,
+        firstName: firstName?.trim() || null,
+        lastName: lastName?.trim() || null,
+        role: role || "viewer",
+      })
+      .returning();
+
+    res.status(201).json(formatUser(user));
+  } catch (err) {
+    console.error("Error creating user:", err);
+    res.status(500).json({ error: "Erro ao criar usuário" });
+  }
+});
 
 router.get("/", async (_req, res) => {
   try {

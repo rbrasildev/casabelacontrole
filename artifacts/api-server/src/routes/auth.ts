@@ -34,6 +34,7 @@ router.get("/auth/user", async (req: Request, res: Response) => {
       firstName: dbUser.firstName,
       lastName: dbUser.lastName,
       profileImageUrl: dbUser.profileImageUrl,
+      role: dbUser.role,
     },
   });
 });
@@ -62,70 +63,6 @@ router.get("/auth/me", async (req: Request, res: Response) => {
     role: dbUser.role,
     isActive: dbUser.isActive,
   });
-});
-
-router.post("/auth/register", async (req: Request, res: Response) => {
-  try {
-    const { email, password, firstName, lastName } = req.body;
-
-    if (!email || !password) {
-      return res.status(400).json({ error: "E-mail e senha são obrigatórios" });
-    }
-
-    if (typeof email !== "string" || !email.includes("@")) {
-      return res.status(400).json({ error: "E-mail inválido" });
-    }
-
-    if (typeof password !== "string" || password.length < 6) {
-      return res.status(400).json({ error: "A senha deve ter pelo menos 6 caracteres" });
-    }
-
-    const [existing] = await db
-      .select({ id: usersTable.id })
-      .from(usersTable)
-      .where(eq(usersTable.email, email.toLowerCase().trim()))
-      .limit(1);
-
-    if (existing) {
-      return res.status(409).json({ error: "Este e-mail já está cadastrado" });
-    }
-
-    const passwordHash = await bcrypt.hash(password, 12);
-
-    const [user] = await db
-      .insert(usersTable)
-      .values({
-        email: email.toLowerCase().trim(),
-        passwordHash,
-        firstName: firstName?.trim() || null,
-        lastName: lastName?.trim() || null,
-      })
-      .returning();
-
-    const sessionData: SessionData = {
-      userId: user.id,
-      email: user.email,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      profileImageUrl: user.profileImageUrl,
-    };
-
-    const sid = await createSession(sessionData);
-    setSessionCookie(res, sid);
-
-    res.status(201).json({
-      user: {
-        id: user.id,
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        profileImageUrl: user.profileImageUrl,
-      },
-    });
-  } catch (err) {
-    console.error("Registration error:", err);
-    res.status(500).json({ error: "Erro ao criar conta" });
-  }
 });
 
 router.post("/auth/login", async (req: Request, res: Response) => {

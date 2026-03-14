@@ -1,17 +1,14 @@
 import { useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
-import { Building2, Heart, Shield, Users, Eye, EyeOff, Mail, Lock, User } from "lucide-react";
+import { Building2, Heart, Shield, Users, Eye, EyeOff, Mail, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 export function Login() {
-  const { login, register } = useAuth();
-  const [mode, setMode] = useState<"login" | "register">("login");
+  const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -22,21 +19,11 @@ export function Login() {
     setIsSubmitting(true);
 
     try {
-      if (mode === "login") {
-        const result = await login(email, password);
-        if (result.error) setError(result.error);
-      } else {
-        const result = await register({ email, password, firstName, lastName });
-        if (result.error) setError(result.error);
-      }
+      const result = await login(email, password);
+      if (result.error) setError(result.error);
     } finally {
       setIsSubmitting(false);
     }
-  }
-
-  function switchMode() {
-    setMode(mode === "login" ? "register" : "login");
-    setError("");
   }
 
   return (
@@ -80,44 +67,13 @@ export function Login() {
 
         <div className="bg-card p-10 flex flex-col justify-center">
           <div className="mb-6">
-            <h3 className="text-2xl font-bold text-foreground mb-1">
-              {mode === "login" ? "Bem-vindo de volta" : "Criar conta"}
-            </h3>
+            <h3 className="text-2xl font-bold text-foreground mb-1">Bem-vindo de volta</h3>
             <p className="text-muted-foreground text-sm">
-              {mode === "login"
-                ? "Faça login para acessar o sistema de gestão."
-                : "Preencha os dados para criar sua conta."}
+              Faça login para acessar o sistema de gestão.
             </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {mode === "register" && (
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <Label htmlFor="firstName" className="text-sm">Nome</Label>
-                  <div className="relative">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <Input
-                      id="firstName"
-                      placeholder="Nome"
-                      value={firstName}
-                      onChange={(e) => setFirstName(e.target.value)}
-                      className="pl-10"
-                    />
-                  </div>
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="lastName" className="text-sm">Sobrenome</Label>
-                  <Input
-                    id="lastName"
-                    placeholder="Sobrenome"
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
-                  />
-                </div>
-              </div>
-            )}
-
             <div className="space-y-1.5">
               <Label htmlFor="email" className="text-sm">E-mail</Label>
               <div className="relative">
@@ -142,13 +98,12 @@ export function Login() {
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
-                  placeholder={mode === "register" ? "Mínimo 6 caracteres" : "Sua senha"}
+                  placeholder="Sua senha"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="pl-10 pr-10"
                   required
-                  minLength={mode === "register" ? 6 : undefined}
-                  autoComplete={mode === "login" ? "current-password" : "new-password"}
+                  autoComplete="current-password"
                 />
                 <button
                   type="button"
@@ -179,26 +134,18 @@ export function Login() {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                   </svg>
-                  {mode === "login" ? "Entrando..." : "Criando conta..."}
+                  Entrando...
                 </span>
               ) : (
-                mode === "login" ? "Entrar" : "Criar Conta"
+                "Entrar"
               )}
             </Button>
           </form>
 
-          <div className="mt-6 text-center">
-            <p className="text-sm text-muted-foreground">
-              {mode === "login" ? "Não tem uma conta?" : "Já tem uma conta?"}{" "}
-              <button
-                type="button"
-                onClick={switchMode}
-                className="text-primary font-semibold hover:underline"
-              >
-                {mode === "login" ? "Cadastre-se" : "Faça login"}
-              </button>
-            </p>
-          </div>
+          <p className="text-xs text-center text-muted-foreground mt-6">
+            Acesso restrito a colaboradores autorizados.<br />
+            Em caso de problemas, contate o administrador.
+          </p>
         </div>
       </div>
     </div>

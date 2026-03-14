@@ -41,13 +41,14 @@ artifacts-monorepo/
 ## Features
 
 ### Authentication & Authorization
-- Custom email/password registration and login
+- Custom email/password login (no public registration — admins create users)
 - Passwords hashed with bcrypt (12 rounds)
 - Role-based access: admin, manager, staff, viewer
-- User management page (admin/manager only)
+- User management page visible to admin/manager; user creation restricted to admin only
+- "Novo Usuário" dialog on Users page (admin only) to create users with email, password, name, role
 - Inactive user session invalidation
 - Session stored in PostgreSQL with 7-day TTL
-- Frontend auth hook at `src/hooks/use-auth.ts`
+- Frontend auth hook at `src/hooks/use-auth.ts` (exposes user role)
 
 ### Dashboard
 - Visão geral com métricas principais
