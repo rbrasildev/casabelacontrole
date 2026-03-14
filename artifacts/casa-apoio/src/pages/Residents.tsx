@@ -25,6 +25,9 @@ const residentSchema = z.object({
   cpf: z.string().min(11, "CPF inválido"),
   dateOfBirth: z.string().min(10, "Data necessária"),
   phone: z.string().min(8, "Telefone inválido"),
+  address: z.string().optional().nullable(),
+  city: z.string().optional().nullable(),
+  state: z.string().optional().nullable(),
   emergencyContact: z.string().min(3, "Contato necessário"),
   emergencyPhone: z.string().min(8, "Telefone inválido"),
   entryDate: z.string().min(10, "Data necessária"),
@@ -98,7 +101,7 @@ export function Residents() {
   });
 
   const openCreate = () => {
-    form.reset({ status: "active", monthlyFee: 0, name: "", cpf: "", dateOfBirth: "", phone: "", emergencyContact: "", emergencyPhone: "", entryDate: "", room: "", notes: "" });
+    form.reset({ status: "active", monthlyFee: 0, name: "", cpf: "", dateOfBirth: "", phone: "", address: "", city: "", state: "", emergencyContact: "", emergencyPhone: "", entryDate: "", room: "", notes: "" });
     setEditingId(null);
     setIsFormOpen(true);
   };
@@ -109,6 +112,9 @@ export function Residents() {
       cpf: resident.cpf,
       dateOfBirth: resident.dateOfBirth.split('T')[0],
       phone: resident.phone,
+      address: resident.address || "",
+      city: resident.city || "",
+      state: resident.state || "",
       emergencyContact: resident.emergencyContact,
       emergencyPhone: resident.emergencyPhone,
       entryDate: resident.entryDate.split('T')[0],
@@ -286,6 +292,30 @@ export function Residents() {
                   <FormItem>
                     <FormLabel>Telefone Pessoal</FormLabel>
                     <FormControl><Input {...field} className="rounded-xl" /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <FormField control={form.control} name="address" render={({ field }) => (
+                  <FormItem className="md:col-span-3">
+                    <FormLabel>Endereço</FormLabel>
+                    <FormControl><Input {...field} value={field.value || ""} placeholder="Rua, número, complemento" className="rounded-xl" /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+                <FormField control={form.control} name="city" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Cidade</FormLabel>
+                    <FormControl><Input {...field} value={field.value || ""} className="rounded-xl" /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+                <FormField control={form.control} name="state" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Estado (UF)</FormLabel>
+                    <FormControl><Input {...field} value={field.value || ""} placeholder="SP" maxLength={2} className="rounded-xl" /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />

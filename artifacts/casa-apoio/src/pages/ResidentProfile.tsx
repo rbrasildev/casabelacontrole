@@ -14,6 +14,10 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+} from "@/components/ui/dialog";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -77,6 +81,9 @@ export function ResidentProfile() {
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
   const [isUploadingDoc, setIsUploadingDoc] = useState(false);
   const [deleteDocId, setDeleteDocId] = useState<number | null>(null);
+  const [isDocDialogOpen, setIsDocDialogOpen] = useState(false);
+  const [docName, setDocName] = useState("");
+  const [selectedDocFiles, setSelectedDocFiles] = useState<FileList | null>(null);
   const photoInputRef = useRef<HTMLInputElement>(null);
   const docInputRef = useRef<HTMLInputElement>(null);
 
@@ -149,33 +156,44 @@ export function ResidentProfile() {
     }
   }
 
-  async function handleDocUpload(e: React.ChangeEvent<HTMLInputElement>) {
+  function handleDocFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const files = e.target.files;
     if (!files?.length) return;
+    setSelectedDocFiles(files);
+    setDocName("");
+    setIsDocDialogOpen(true);
+    if (docInputRef.current) docInputRef.current.value = "";
+  }
+
+  async function handleDocUploadConfirm() {
+    if (!selectedDocFiles?.length || !docName.trim()) return;
 
     setIsUploadingDoc(true);
+    setIsDocDialogOpen(false);
     try {
-      for (const file of Array.from(files)) {
+      for (const file of Array.from(selectedDocFiles)) {
         const { objectPath } = await uploadFileToStorage(file);
-        await fetch(`${BASE}/api/residents/${residentId}/documents`, {
+        const res = await fetch(`${BASE}/api/residents/${residentId}/documents`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
           body: JSON.stringify({
-            name: file.name,
+            name: docName.trim(),
             objectPath,
             contentType: file.type,
             size: file.size,
           }),
         });
+        if (!res.ok) throw new Error("Erro ao salvar documento");
       }
       queryClient.invalidateQueries({ queryKey: ["/api/residents", residentId, "documents"] });
-      toast({ title: `${files.length} documento(s) anexado(s) com sucesso!` });
+      toast({ title: "Documento anexado com sucesso!" });
     } catch {
       toast({ title: "Erro ao enviar documento", variant: "destructive" });
     } finally {
       setIsUploadingDoc(false);
-      if (docInputRef.current) docInputRef.current.value = "";
+      setSelectedDocFiles(null);
+      setDocName("");
     }
   }
 
@@ -290,6 +308,17 @@ export function ResidentProfile() {
                   <p className="font-medium">{formatDate(resident.dateOfBirth)}</p>
                 </div>
               </div>
+              {(resident.address || resident.city || resident.state) && (
+                <div className="flex items-center gap-3 text-sm">
+                  <div className="p-2 bg-secondary rounded-lg"><MapPin className="w-4 h-4 text-muted-foreground" /></div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Endereço</p>
+                    <p className="font-medium">
+                      {[resident.address, resident.city, resident.state].filter(Boolean).join(", ")}
+                    </p>
+                  </div>
+                </div>
+              )}
               <div className="flex items-center gap-3 text-sm">
                 <div className="p-2 bg-secondary rounded-lg"><MapPin className="w-4 h-4 text-muted-foreground" /></div>
                 <div>
@@ -406,8 +435,7 @@ export function ResidentProfile() {
               <input
                 ref={docInputRef}
                 type="file"
-                multiple
-                onChange={handleDocUpload}
+                onChange={handleDocFileSelect}
                 className="hidden"
               />
             </CardHeader>
@@ -468,6 +496,46 @@ export function ResidentProfile() {
           </Card>
         </div>
       </div>
+
+      <Dialog open={isDocDialogOpen} onOpenChange={(open) => {
+        if (!open) { setIsDocDialogOpen(false); setSelectedDocFiles(null); setDocName(""); }
+      }}>
+        <DialogContent className="sm:max-w-[450px] rounded-2xl">
+          <DialogHeader>
+            <DialogTitle>Anexar Documento</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div>
+              <Label htmlFor="docName">Nome / Descrição do Documento</Label>
+              <Input
+                id="docName"
+                value={docName}
+                onChange={(e) => setDocName(e.target.value)}
+                placeholder="Ex: RG, CPF, Laudo Médico, Receita..."
+                className="mt-1.5 rounded-xl"
+                autoFocus
+              />
+            </div>
+            {selectedDocFiles && (
+              <div className="text-sm text-muted-foreground bg-secondary/50 p-3 rounded-lg">
+                <p className="font-medium text-foreground mb-1">Arquivo selecionado:</p>
+                {Array.from(selectedDocFiles).map((f, i) => (
+                  <p key={i} className="truncate">{f.name} ({formatFileSize(f.size)})</p>
+                ))}
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setIsDocDialogOpen(false); setSelectedDocFiles(null); setDocName(""); }} className="rounded-xl">
+              Cancelar
+            </Button>
+            <Button onClick={handleDocUploadConfirm} disabled={!docName.trim() || isUploadingDoc} className="rounded-xl">
+              {isUploadingDoc ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Upload className="w-4 h-4 mr-2" />}
+              Enviar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <AlertDialog open={!!deleteDocId} onOpenChange={() => setDeleteDocId(null)}>
         <AlertDialogContent>

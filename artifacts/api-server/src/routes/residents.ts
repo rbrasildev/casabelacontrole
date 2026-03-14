@@ -11,6 +11,9 @@ function formatResident(r: typeof residentsTable.$inferSelect) {
     cpf: r.cpf,
     dateOfBirth: r.dateOfBirth,
     phone: r.phone,
+    address: r.address ?? null,
+    city: r.city ?? null,
+    state: r.state ?? null,
     emergencyContact: r.emergencyContact,
     emergencyPhone: r.emergencyPhone,
     entryDate: r.entryDate,
@@ -58,6 +61,9 @@ router.post("/", async (req, res) => {
         cpf: body.cpf,
         dateOfBirth: body.dateOfBirth,
         phone: body.phone,
+        address: body.address ?? null,
+        city: body.city ?? null,
+        state: body.state ?? null,
         emergencyContact: body.emergencyContact,
         emergencyPhone: body.emergencyPhone,
         entryDate: body.entryDate,
@@ -99,6 +105,9 @@ router.put("/:id", async (req, res) => {
     if (body.cpf !== undefined) updateData.cpf = body.cpf;
     if (body.dateOfBirth !== undefined) updateData.dateOfBirth = body.dateOfBirth;
     if (body.phone !== undefined) updateData.phone = body.phone;
+    if (body.address !== undefined) updateData.address = body.address ?? null;
+    if (body.city !== undefined) updateData.city = body.city ?? null;
+    if (body.state !== undefined) updateData.state = body.state ?? null;
     if (body.emergencyContact !== undefined) updateData.emergencyContact = body.emergencyContact;
     if (body.emergencyPhone !== undefined) updateData.emergencyPhone = body.emergencyPhone;
     if (body.entryDate !== undefined) updateData.entryDate = body.entryDate;
