@@ -9,6 +9,7 @@ import dashboardRouter from "./dashboard";
 import campaignsRouter from "./campaigns";
 import usersRouter from "./users";
 import storageRouter from "./storage";
+import notificationsRouter from "./notifications";
 
 const router: IRouter = Router();
 
@@ -22,6 +23,7 @@ router.use("/activities", activitiesRouter);
 router.use("/dashboard", dashboardRouter);
 router.use("/campaigns", campaignsRouter);
 router.use("/contributions", campaignsRouter);
+router.use("/notifications", notificationsRouter);
 router.use(storageRouter);
 
 export default router;

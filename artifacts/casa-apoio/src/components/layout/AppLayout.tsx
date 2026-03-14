@@ -9,7 +9,6 @@ import {
   HandCoins,
   BarChart3,
   Menu,
-  Bell,
   LogOut,
   UserCog,
 } from "lucide-react";
@@ -17,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/hooks/use-auth";
 import { useCurrentUser } from "@/hooks/use-current-user";
+import { NotificationBell } from "@/components/NotificationBell";
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -134,10 +134,7 @@ export function AppLayout({ children }: AppLayoutProps) {
 
         <header className="hidden md:flex h-20 items-center justify-end px-8 bg-background/80 backdrop-blur-md sticky top-0 z-10">
           <div className="flex items-center gap-4">
-            <Button variant="outline" size="icon" className="rounded-full bg-card hover:bg-secondary hover:text-primary transition-colors relative">
-              <Bell className="w-5 h-5" />
-              <span className="absolute top-0 right-0 w-2.5 h-2.5 bg-destructive rounded-full border-2 border-card"></span>
-            </Button>
+            <NotificationBell />
           </div>
         </header>
 

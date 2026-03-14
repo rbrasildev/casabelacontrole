@@ -348,6 +348,23 @@ export interface CreateContribution {
   notes?: string | null;
 }
 
+export interface Notification {
+  id: number;
+  type: string;
+  title: string;
+  message: string;
+  icon?: string | null;
+  link?: string | null;
+  userId?: string | null;
+  read: boolean;
+  isAuto?: boolean;
+  createdAt: string;
+}
+
+export interface UnreadCount {
+  count: number;
+}
+
 export interface DashboardStats {
   totalResidents: number;
   activeResidents: number;

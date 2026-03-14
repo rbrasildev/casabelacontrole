@@ -103,16 +103,29 @@ artifacts-monorepo/
 - Exclusão de usuários com confirmação
 - Acesso restrito a administradores e gerentes
 
+### Notificações
+- Sino de notificações no header com contagem de não lidas
+- Notificações automáticas geradas em tempo real:
+  - Estoque baixo (itens abaixo do mínimo)
+  - Pagamentos pendentes
+  - Transações vencidas
+- Popover com lista de notificações, ícones coloridos por tipo
+- "Marcar todas lidas" para limpar notificações
+- Clique em notificação navega para a página relevante
+- Suporte a notificações persistentes (armazenadas no banco)
+
 ## Database Schema
 
 - `users` - Usuários do sistema (id, email, nome, cargo, status ativo)
 - `sessions` - Sessões de autenticação
 - `residents` - Residentes da casa
-- `finances` - Transações financeiras
+- `finances` - Transações financeiras (com receiptPath para comprovantes)
+- `recurring_expenses` - Despesas fixas mensais
 - `inventory` - Itens de estoque
 - `activities` - Atividades e agenda
 - `campaigns` - Campanhas de vaquinha
 - `contributions` - Contribuições das campanhas
+- `notifications` - Notificações do sistema
 
 ## API Routes
 
@@ -132,6 +145,13 @@ All routes prefixed with `/api`:
 - `GET/POST /activities` - Lista e cria atividades
 - `PUT/DELETE /activities/:id` - Operações individuais
 - `GET /dashboard/stats` - Estatísticas do dashboard
+- `GET /notifications` - Lista notificações (auto + persistentes)
+- `GET /notifications/unread-count` - Contagem de não lidas
+- `PUT /notifications/:id/read` - Marcar uma como lida
+- `PUT /notifications/read-all` - Marcar todas como lidas
+- `GET/POST /finances/recurring` - Despesas fixas
+- `PUT/DELETE /finances/recurring/:id` - Operações individuais
+- `POST /finances/recurring/generate` - Gerar lançamentos do mês
 - `GET/POST /campaigns` - Campanhas de vaquinha
 - `PUT/DELETE /campaigns/:id` - Operações individuais
 - `POST /campaigns/:id/contributions` - Adicionar contribuição

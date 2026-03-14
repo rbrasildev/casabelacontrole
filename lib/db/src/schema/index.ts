@@ -4,3 +4,4 @@ export * from "./inventory";
 export * from "./activities";
 export * from "./campaigns";
 export * from "./auth";
+export * from "./notifications";

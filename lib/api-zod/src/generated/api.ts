@@ -719,3 +719,57 @@ export const GetDashboardStatsResponse = zod.object({
     }),
   ),
 });
+
+/**
+ * @summary List notifications
+ */
+export const ListNotificationsResponseItem = zod.object({
+  id: zod.number(),
+  type: zod.string(),
+  title: zod.string(),
+  message: zod.string(),
+  icon: zod.string().nullish(),
+  link: zod.string().nullish(),
+  userId: zod.string().nullish(),
+  read: zod.boolean(),
+  isAuto: zod.boolean().optional(),
+  createdAt: zod.string(),
+});
+export const ListNotificationsResponse = zod.array(
+  ListNotificationsResponseItem,
+);
+
+/**
+ * @summary Get unread notification count
+ */
+export const GetUnreadNotificationCountResponse = zod.object({
+  count: zod.number(),
+});
+
+/**
+ * @summary Mark all notifications as read
+ */
+export const MarkAllNotificationsReadResponse = zod.object({
+  success: zod.boolean(),
+  message: zod.string(),
+});
+
+/**
+ * @summary Mark a notification as read
+ */
+export const MarkNotificationReadParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const MarkNotificationReadResponse = zod.object({
+  id: zod.number(),
+  type: zod.string(),
+  title: zod.string(),
+  message: zod.string(),
+  icon: zod.string().nullish(),
+  link: zod.string().nullish(),
+  userId: zod.string().nullish(),
+  read: zod.boolean(),
+  isAuto: zod.boolean().optional(),
+  createdAt: zod.string(),
+});
