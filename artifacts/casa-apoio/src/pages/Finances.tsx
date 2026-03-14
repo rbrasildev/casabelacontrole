@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useListFinances, useCreateFinance, useUpdateFinance, useDeleteFinance, getListFinancesQueryKey, useListResidents } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
@@ -6,16 +6,18 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { formatCurrency, formatDate } from "@/lib/format";
 import { 
-  Wallet, Plus, TrendingUp, TrendingDown, MoreVertical, Edit, Trash2, Filter
+  Wallet, Plus, TrendingUp, TrendingDown, MoreVertical, Edit, Trash2, CalendarRange, BarChart3, X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const financeSchema = z.object({
   type: z.enum(["income", "expense"]),
@@ -36,19 +38,68 @@ const CATEGORIES = {
   expense: ["Alimentação", "Medicamentos", "Materiais", "Salários", "Manutenção", "Energia", "Água", "Aluguel", "Outros"]
 };
 
+const ALL_CATEGORIES = [...new Set([...CATEGORIES.income, ...CATEGORIES.expense])];
+
+function getFirstDayOfMonth() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-01`;
+}
+
+function getLastDayOfMonth() {
+  const d = new Date();
+  const last = new Date(d.getFullYear(), d.getMonth() + 1, 0);
+  return `${last.getFullYear()}-${String(last.getMonth() + 1).padStart(2, "0")}-${String(last.getDate()).padStart(2, "0")}`;
+}
+
 export function Finances() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [typeFilter, setTypeFilter] = useState<"all" | "income" | "expense">("all");
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | "paid" | "pending" | "overdue">("all");
+  const [startDate, setStartDate] = useState(getFirstDayOfMonth());
+  const [endDate, setEndDate] = useState(getLastDayOfMonth());
   
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
 
-  const { data: transactions, isLoading } = useListFinances({ 
+  const { data: allTransactions, isLoading } = useListFinances({ 
     type: typeFilter === "all" ? undefined : typeFilter 
   });
   
   const { data: residents } = useListResidents({ status: "active" });
+
+  const transactions = useMemo(() => {
+    if (!allTransactions) return [];
+    return allTransactions.filter((t) => {
+      const tDate = t.date.split("T")[0];
+      if (startDate && tDate < startDate) return false;
+      if (endDate && tDate > endDate) return false;
+      if (categoryFilter !== "all" && t.category !== categoryFilter) return false;
+      if (statusFilter !== "all" && t.status !== statusFilter) return false;
+      return true;
+    });
+  }, [allTransactions, startDate, endDate, categoryFilter, statusFilter]);
+
+  const totalIncome = transactions.filter(t => t.type === 'income' && t.status === 'paid').reduce((acc, curr) => acc + curr.amount, 0);
+  const totalExpense = transactions.filter(t => t.type === 'expense' && t.status === 'paid').reduce((acc, curr) => acc + curr.amount, 0);
+  const balance = totalIncome - totalExpense;
+  const pendingCount = transactions.filter(t => t.status === 'pending').length;
+
+  const categoryBreakdown = useMemo(() => {
+    const map: Record<string, { income: number; expense: number }> = {};
+    transactions.forEach((t) => {
+      if (t.status !== "paid") return;
+      if (!map[t.category]) map[t.category] = { income: 0, expense: 0 };
+      if (t.type === "income") map[t.category].income += t.amount;
+      else map[t.category].expense += t.amount;
+    });
+    return Object.entries(map)
+      .map(([cat, vals]) => ({ category: cat, ...vals, total: vals.income + vals.expense }))
+      .sort((a, b) => b.total - a.total);
+  }, [transactions]);
+
+  const maxCategoryTotal = Math.max(...categoryBreakdown.map(c => c.total), 1);
 
   const createMut = useCreateFinance({
     mutation: {
@@ -105,10 +156,15 @@ export function Finances() {
     else createMut.mutate({ data });
   };
 
-  // Calculate stats
-  const totalIncome = transactions?.filter(t => t.type === 'income' && t.status === 'paid').reduce((acc, curr) => acc + curr.amount, 0) || 0;
-  const totalExpense = transactions?.filter(t => t.type === 'expense' && t.status === 'paid').reduce((acc, curr) => acc + curr.amount, 0) || 0;
-  const balance = totalIncome - totalExpense;
+  function clearFilters() {
+    setTypeFilter("all");
+    setCategoryFilter("all");
+    setStatusFilter("all");
+    setStartDate(getFirstDayOfMonth());
+    setEndDate(getLastDayOfMonth());
+  }
+
+  const hasActiveFilters = typeFilter !== "all" || categoryFilter !== "all" || statusFilter !== "all" || startDate !== getFirstDayOfMonth() || endDate !== getLastDayOfMonth();
 
   return (
     <div className="space-y-6">
@@ -122,52 +178,155 @@ export function Finances() {
         </Button>
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-card p-6 rounded-2xl shadow-sm border border-border">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-primary/10 text-primary rounded-xl"><TrendingUp className="w-6 h-6" /></div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-card p-5 rounded-2xl shadow-sm border border-border">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 bg-primary/10 text-primary rounded-xl"><TrendingUp className="w-5 h-5" /></div>
             <div>
-              <p className="text-sm font-medium text-muted-foreground">Receitas (Pagas)</p>
-              <h3 className="text-2xl font-bold font-display text-primary">{formatCurrency(totalIncome)}</h3>
+              <p className="text-xs font-medium text-muted-foreground">Receitas (Pagas)</p>
+              <h3 className="text-xl font-bold font-display text-primary">{formatCurrency(totalIncome)}</h3>
             </div>
           </div>
         </div>
-        <div className="bg-card p-6 rounded-2xl shadow-sm border border-border">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-destructive/10 text-destructive rounded-xl"><TrendingDown className="w-6 h-6" /></div>
+        <div className="bg-card p-5 rounded-2xl shadow-sm border border-border">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 bg-destructive/10 text-destructive rounded-xl"><TrendingDown className="w-5 h-5" /></div>
             <div>
-              <p className="text-sm font-medium text-muted-foreground">Despesas (Pagas)</p>
-              <h3 className="text-2xl font-bold font-display text-destructive">{formatCurrency(totalExpense)}</h3>
+              <p className="text-xs font-medium text-muted-foreground">Despesas (Pagas)</p>
+              <h3 className="text-xl font-bold font-display text-destructive">{formatCurrency(totalExpense)}</h3>
             </div>
           </div>
         </div>
-        <div className="bg-primary p-6 rounded-2xl shadow-lg shadow-primary/20 border border-primary/20 text-white">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-white/20 rounded-xl"><Wallet className="w-6 h-6" /></div>
+        <div className="bg-primary p-5 rounded-2xl shadow-lg shadow-primary/20 text-white">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 bg-white/20 rounded-xl"><Wallet className="w-5 h-5" /></div>
             <div>
-              <p className="text-sm font-medium text-white/80">Saldo Operacional</p>
-              <h3 className="text-2xl font-bold font-display">{formatCurrency(balance)}</h3>
+              <p className="text-xs font-medium text-white/80">Saldo no Período</p>
+              <h3 className="text-xl font-bold font-display">{formatCurrency(balance)}</h3>
+            </div>
+          </div>
+        </div>
+        <div className="bg-card p-5 rounded-2xl shadow-sm border border-border">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 bg-amber-500/10 text-amber-600 rounded-xl"><CalendarRange className="w-5 h-5" /></div>
+            <div>
+              <p className="text-xs font-medium text-muted-foreground">Pendentes</p>
+              <h3 className="text-xl font-bold font-display">{pendingCount} {pendingCount === 1 ? "transação" : "transações"}</h3>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Filters & Table */}
-      <div className="bg-card rounded-2xl shadow-lg shadow-black/5 border border-border overflow-hidden">
-        <div className="p-4 border-b border-border/50 bg-secondary/20 flex gap-4">
-          <Select value={typeFilter} onValueChange={(v: any) => setTypeFilter(v)}>
-            <SelectTrigger className="w-[200px] rounded-xl bg-background">
-              <SelectValue placeholder="Tipo de Transação" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todas as Transações</SelectItem>
-              <SelectItem value="income">Apenas Receitas</SelectItem>
-              <SelectItem value="expense">Apenas Despesas</SelectItem>
-            </SelectContent>
-          </Select>
+      <div className="bg-card p-4 rounded-2xl shadow-sm border border-border space-y-3">
+        <div className="flex items-center justify-between">
+          <h3 className="font-semibold text-sm text-muted-foreground flex items-center gap-2">
+            <BarChart3 className="w-4 h-4" /> Filtros
+          </h3>
+          {hasActiveFilters && (
+            <Button variant="ghost" size="sm" onClick={clearFilters} className="text-xs gap-1">
+              <X className="w-3 h-3" /> Limpar filtros
+            </Button>
+          )}
         </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+          <div>
+            <Label className="text-xs text-muted-foreground mb-1 block">Período Início</Label>
+            <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="rounded-xl bg-background" />
+          </div>
+          <div>
+            <Label className="text-xs text-muted-foreground mb-1 block">Período Fim</Label>
+            <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="rounded-xl bg-background" />
+          </div>
+          <div>
+            <Label className="text-xs text-muted-foreground mb-1 block">Tipo</Label>
+            <Select value={typeFilter} onValueChange={(v: any) => setTypeFilter(v)}>
+              <SelectTrigger className="rounded-xl bg-background"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos</SelectItem>
+                <SelectItem value="income">Receitas</SelectItem>
+                <SelectItem value="expense">Despesas</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label className="text-xs text-muted-foreground mb-1 block">Categoria</Label>
+            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+              <SelectTrigger className="rounded-xl bg-background"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas</SelectItem>
+                {ALL_CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label className="text-xs text-muted-foreground mb-1 block">Status</Label>
+            <Select value={statusFilter} onValueChange={(v: any) => setStatusFilter(v)}>
+              <SelectTrigger className="rounded-xl bg-background"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos</SelectItem>
+                <SelectItem value="paid">Pago</SelectItem>
+                <SelectItem value="pending">Pendente</SelectItem>
+                <SelectItem value="overdue">Atrasado</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      </div>
 
+      {categoryBreakdown.length > 0 && (
+        <Card className="rounded-2xl shadow-sm">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <BarChart3 className="w-5 h-5 text-primary" />
+              Resumo por Categoria (Pagos)
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {categoryBreakdown.map((item) => (
+                <div key={item.category} className="space-y-1.5">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-medium">{item.category}</span>
+                    <div className="flex items-center gap-3">
+                      {item.income > 0 && (
+                        <span className="text-primary text-xs font-semibold">
+                          +{formatCurrency(item.income)}
+                        </span>
+                      )}
+                      {item.expense > 0 && (
+                        <span className="text-destructive text-xs font-semibold">
+                          -{formatCurrency(item.expense)}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex h-2.5 rounded-full overflow-hidden bg-secondary">
+                    {item.income > 0 && (
+                      <div
+                        className="bg-primary/70 h-full rounded-l-full transition-all"
+                        style={{ width: `${(item.income / maxCategoryTotal) * 100}%` }}
+                      />
+                    )}
+                    {item.expense > 0 && (
+                      <div
+                        className="bg-destructive/60 h-full rounded-r-full transition-all"
+                        style={{ width: `${(item.expense / maxCategoryTotal) * 100}%` }}
+                      />
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      <div className="bg-card rounded-2xl shadow-lg shadow-black/5 border border-border overflow-hidden">
+        <div className="px-6 py-3 border-b border-border/50 bg-secondary/20 flex items-center justify-between">
+          <p className="text-sm text-muted-foreground font-medium">
+            {transactions.length} {transactions.length === 1 ? "transação encontrada" : "transações encontradas"}
+          </p>
+        </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left">
             <thead className="bg-secondary/30 text-muted-foreground font-medium border-b border-border">
@@ -181,42 +340,52 @@ export function Finances() {
               </tr>
             </thead>
             <tbody className="divide-y divide-border/50">
-              {transactions?.map((t) => (
-                <tr key={t.id} className="hover:bg-secondary/20 transition-colors group">
-                  <td className="px-6 py-4">
-                    <div className="font-semibold text-foreground flex items-center gap-2">
-                      {t.type === 'income' ? <TrendingUp className="w-4 h-4 text-primary" /> : <TrendingDown className="w-4 h-4 text-destructive" />}
-                      {t.description}
-                    </div>
-                    {t.residentName && <div className="text-xs text-muted-foreground mt-1">Ref: {t.residentName}</div>}
-                  </td>
-                  <td className="px-6 py-4"><span className="bg-secondary px-2 py-1 rounded-md text-xs">{t.category}</span></td>
-                  <td className="px-6 py-4">{formatDate(t.date)}</td>
-                  <td className="px-6 py-4">
-                    <Badge variant="outline" className={
-                      t.status === 'paid' ? 'bg-primary/10 text-primary border-primary/20' :
-                      t.status === 'pending' ? 'bg-amber-500/10 text-amber-600 border-amber-500/20' :
-                      'bg-destructive/10 text-destructive border-destructive/20'
-                    }>
-                      {t.status === 'paid' ? 'Pago' : t.status === 'pending' ? 'Pendente' : 'Atrasado'}
-                    </Badge>
-                  </td>
-                  <td className={`px-6 py-4 text-right font-bold ${t.type === 'income' ? 'text-primary' : 'text-foreground'}`}>
-                    {t.type === 'expense' ? '-' : ''}{formatCurrency(t.amount)}
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="rounded-xl opacity-0 group-hover:opacity-100 transition-opacity"><MoreVertical className="w-5 h-5" /></Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="rounded-xl">
-                        <DropdownMenuItem onClick={() => openEdit(t)}><Edit className="w-4 h-4 mr-2" /> Editar</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => deleteMut.mutate({ id: t.id })} className="text-destructive"><Trash2 className="w-4 h-4 mr-2" /> Excluir</DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+              {transactions.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="px-6 py-12 text-center text-muted-foreground">
+                    <Wallet className="w-12 h-12 mx-auto mb-4 opacity-20" />
+                    <p className="text-lg font-medium">Nenhuma transação encontrada</p>
+                    <p className="text-sm mt-1">Ajuste os filtros ou registre uma nova transação.</p>
                   </td>
                 </tr>
-              ))}
+              ) : (
+                transactions.map((t) => (
+                  <tr key={t.id} className="hover:bg-secondary/20 transition-colors group">
+                    <td className="px-6 py-4">
+                      <div className="font-semibold text-foreground flex items-center gap-2">
+                        {t.type === 'income' ? <TrendingUp className="w-4 h-4 text-primary" /> : <TrendingDown className="w-4 h-4 text-destructive" />}
+                        {t.description}
+                      </div>
+                      {t.residentName && <div className="text-xs text-muted-foreground mt-1">Ref: {t.residentName}</div>}
+                    </td>
+                    <td className="px-6 py-4"><span className="bg-secondary px-2 py-1 rounded-md text-xs">{t.category}</span></td>
+                    <td className="px-6 py-4">{formatDate(t.date)}</td>
+                    <td className="px-6 py-4">
+                      <Badge variant="outline" className={
+                        t.status === 'paid' ? 'bg-primary/10 text-primary border-primary/20' :
+                        t.status === 'pending' ? 'bg-amber-500/10 text-amber-600 border-amber-500/20' :
+                        'bg-destructive/10 text-destructive border-destructive/20'
+                      }>
+                        {t.status === 'paid' ? 'Pago' : t.status === 'pending' ? 'Pendente' : 'Atrasado'}
+                      </Badge>
+                    </td>
+                    <td className={`px-6 py-4 text-right font-bold ${t.type === 'income' ? 'text-primary' : 'text-foreground'}`}>
+                      {t.type === 'expense' ? '-' : ''}{formatCurrency(t.amount)}
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="rounded-xl opacity-0 group-hover:opacity-100 transition-opacity"><MoreVertical className="w-5 h-5" /></Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="rounded-xl">
+                          <DropdownMenuItem onClick={() => openEdit(t)}><Edit className="w-4 h-4 mr-2" /> Editar</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => deleteMut.mutate({ id: t.id })} className="text-destructive"><Trash2 className="w-4 h-4 mr-2" /> Excluir</DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
