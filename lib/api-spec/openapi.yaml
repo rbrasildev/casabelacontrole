@@ -379,6 +379,160 @@ paths:
               schema:
                 $ref: "#/components/schemas/DeleteResponse"
 
+  /campaigns:
+    get:
+      operationId: listCampaigns
+      tags: [campaigns]
+      summary: List all campaigns
+      responses:
+        "200":
+          description: List of campaigns
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Campaign"
+    post:
+      operationId: createCampaign
+      tags: [campaigns]
+      summary: Create a campaign
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCampaign"
+      responses:
+        "201":
+          description: Campaign created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Campaign"
+
+  /campaigns/{id}:
+    get:
+      operationId: getCampaign
+      tags: [campaigns]
+      summary: Get campaign by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Campaign
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Campaign"
+    put:
+      operationId: updateCampaign
+      tags: [campaigns]
+      summary: Update campaign
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCampaign"
+      responses:
+        "200":
+          description: Campaign updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Campaign"
+    delete:
+      operationId: deleteCampaign
+      tags: [campaigns]
+      summary: Delete campaign
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeleteResponse"
+
+  /campaigns/{id}/contributions:
+    get:
+      operationId: listContributions
+      tags: [campaigns]
+      summary: List contributions for a campaign
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of contributions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Contribution"
+    post:
+      operationId: createContribution
+      tags: [campaigns]
+      summary: Add contribution to campaign
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateContribution"
+      responses:
+        "201":
+          description: Contribution created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Contribution"
+
+  /contributions/{id}:
+    delete:
+      operationId: deleteContribution
+      tags: [campaigns]
+      summary: Delete contribution
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeleteResponse"
+
   /dashboard/stats:
     get:
       operationId: getDashboardStats
@@ -714,6 +868,124 @@ components:
         - type
         - status
         - scheduledDate
+
+    Campaign:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+          nullable: true
+        goalAmount:
+          type: number
+        currentAmount:
+          type: number
+        progressPercent:
+          type: number
+        status:
+          type: string
+          enum: [active, closed, completed]
+        startDate:
+          type: string
+        endDate:
+          type: string
+          nullable: true
+        pixKey:
+          type: string
+          nullable: true
+        contributionsCount:
+          type: integer
+        createdAt:
+          type: string
+      required:
+        - id
+        - title
+        - goalAmount
+        - currentAmount
+        - progressPercent
+        - status
+        - startDate
+        - contributionsCount
+        - createdAt
+
+    CreateCampaign:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+          nullable: true
+        goalAmount:
+          type: number
+        status:
+          type: string
+          enum: [active, closed, completed]
+        startDate:
+          type: string
+        endDate:
+          type: string
+          nullable: true
+        pixKey:
+          type: string
+          nullable: true
+      required:
+        - title
+        - goalAmount
+        - status
+        - startDate
+
+    Contribution:
+      type: object
+      properties:
+        id:
+          type: integer
+        campaignId:
+          type: integer
+        contributorName:
+          type: string
+        contributorContact:
+          type: string
+          nullable: true
+        amount:
+          type: number
+        paymentMethod:
+          type: string
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+      required:
+        - id
+        - campaignId
+        - contributorName
+        - amount
+        - createdAt
+
+    CreateContribution:
+      type: object
+      properties:
+        contributorName:
+          type: string
+        contributorContact:
+          type: string
+          nullable: true
+        amount:
+          type: number
+        paymentMethod:
+          type: string
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+      required:
+        - contributorName
+        - amount
 
     DashboardStats:
       type: object

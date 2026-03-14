@@ -213,6 +213,68 @@ export interface CreateActivity {
   notes?: string | null;
 }
 
+export type CampaignStatus =
+  (typeof CampaignStatus)[keyof typeof CampaignStatus];
+
+export const CampaignStatus = {
+  active: "active",
+  closed: "closed",
+  completed: "completed",
+} as const;
+
+export interface Campaign {
+  id: number;
+  title: string;
+  description?: string | null;
+  goalAmount: number;
+  currentAmount: number;
+  progressPercent: number;
+  status: CampaignStatus;
+  startDate: string;
+  endDate?: string | null;
+  pixKey?: string | null;
+  contributionsCount: number;
+  createdAt: string;
+}
+
+export type CreateCampaignStatus =
+  (typeof CreateCampaignStatus)[keyof typeof CreateCampaignStatus];
+
+export const CreateCampaignStatus = {
+  active: "active",
+  closed: "closed",
+  completed: "completed",
+} as const;
+
+export interface CreateCampaign {
+  title: string;
+  description?: string | null;
+  goalAmount: number;
+  status: CreateCampaignStatus;
+  startDate: string;
+  endDate?: string | null;
+  pixKey?: string | null;
+}
+
+export interface Contribution {
+  id: number;
+  campaignId: number;
+  contributorName: string;
+  contributorContact?: string | null;
+  amount: number;
+  paymentMethod?: string | null;
+  notes?: string | null;
+  createdAt: string;
+}
+
+export interface CreateContribution {
+  contributorName: string;
+  contributorContact?: string | null;
+  amount: number;
+  paymentMethod?: string | null;
+  notes?: string | null;
+}
+
 export interface DashboardStats {
   totalResidents: number;
   activeResidents: number;

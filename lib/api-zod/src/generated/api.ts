@@ -402,6 +402,152 @@ export const DeleteActivityResponse = zod.object({
 });
 
 /**
+ * @summary List all campaigns
+ */
+export const ListCampaignsResponseItem = zod.object({
+  id: zod.number(),
+  title: zod.string(),
+  description: zod.string().nullish(),
+  goalAmount: zod.number(),
+  currentAmount: zod.number(),
+  progressPercent: zod.number(),
+  status: zod.enum(["active", "closed", "completed"]),
+  startDate: zod.string(),
+  endDate: zod.string().nullish(),
+  pixKey: zod.string().nullish(),
+  contributionsCount: zod.number(),
+  createdAt: zod.string(),
+});
+export const ListCampaignsResponse = zod.array(ListCampaignsResponseItem);
+
+/**
+ * @summary Create a campaign
+ */
+export const CreateCampaignBody = zod.object({
+  title: zod.string(),
+  description: zod.string().nullish(),
+  goalAmount: zod.number(),
+  status: zod.enum(["active", "closed", "completed"]),
+  startDate: zod.string(),
+  endDate: zod.string().nullish(),
+  pixKey: zod.string().nullish(),
+});
+
+/**
+ * @summary Get campaign by ID
+ */
+export const GetCampaignParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const GetCampaignResponse = zod.object({
+  id: zod.number(),
+  title: zod.string(),
+  description: zod.string().nullish(),
+  goalAmount: zod.number(),
+  currentAmount: zod.number(),
+  progressPercent: zod.number(),
+  status: zod.enum(["active", "closed", "completed"]),
+  startDate: zod.string(),
+  endDate: zod.string().nullish(),
+  pixKey: zod.string().nullish(),
+  contributionsCount: zod.number(),
+  createdAt: zod.string(),
+});
+
+/**
+ * @summary Update campaign
+ */
+export const UpdateCampaignParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateCampaignBody = zod.object({
+  title: zod.string(),
+  description: zod.string().nullish(),
+  goalAmount: zod.number(),
+  status: zod.enum(["active", "closed", "completed"]),
+  startDate: zod.string(),
+  endDate: zod.string().nullish(),
+  pixKey: zod.string().nullish(),
+});
+
+export const UpdateCampaignResponse = zod.object({
+  id: zod.number(),
+  title: zod.string(),
+  description: zod.string().nullish(),
+  goalAmount: zod.number(),
+  currentAmount: zod.number(),
+  progressPercent: zod.number(),
+  status: zod.enum(["active", "closed", "completed"]),
+  startDate: zod.string(),
+  endDate: zod.string().nullish(),
+  pixKey: zod.string().nullish(),
+  contributionsCount: zod.number(),
+  createdAt: zod.string(),
+});
+
+/**
+ * @summary Delete campaign
+ */
+export const DeleteCampaignParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const DeleteCampaignResponse = zod.object({
+  success: zod.boolean(),
+  message: zod.string(),
+});
+
+/**
+ * @summary List contributions for a campaign
+ */
+export const ListContributionsParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const ListContributionsResponseItem = zod.object({
+  id: zod.number(),
+  campaignId: zod.number(),
+  contributorName: zod.string(),
+  contributorContact: zod.string().nullish(),
+  amount: zod.number(),
+  paymentMethod: zod.string().nullish(),
+  notes: zod.string().nullish(),
+  createdAt: zod.string(),
+});
+export const ListContributionsResponse = zod.array(
+  ListContributionsResponseItem,
+);
+
+/**
+ * @summary Add contribution to campaign
+ */
+export const CreateContributionParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const CreateContributionBody = zod.object({
+  contributorName: zod.string(),
+  contributorContact: zod.string().nullish(),
+  amount: zod.number(),
+  paymentMethod: zod.string().nullish(),
+  notes: zod.string().nullish(),
+});
+
+/**
+ * @summary Delete contribution
+ */
+export const DeleteContributionParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const DeleteContributionResponse = zod.object({
+  success: zod.boolean(),
+  message: zod.string(),
+});
+
+/**
  * @summary Get dashboard statistics
  */
 export const GetDashboardStatsResponse = zod.object({

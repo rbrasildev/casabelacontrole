@@ -13,6 +13,7 @@ import { Residents } from "@/pages/Residents";
 import { Finances } from "@/pages/Finances";
 import { Inventory } from "@/pages/Inventory";
 import { Activities } from "@/pages/Activities";
+import { Vaquinha } from "@/pages/Vaquinha";
 import { Reports } from "@/pages/Reports";
 
 // Configure react-query client
@@ -35,6 +36,7 @@ function Router() {
         <Route path="/financeiro" component={Finances} />
         <Route path="/estoque" component={Inventory} />
         <Route path="/atividades" component={Activities} />
+        <Route path="/vaquinha" component={Vaquinha} />
         <Route path="/relatorios" component={Reports} />
         <Route component={NotFound} />
       </Switch>

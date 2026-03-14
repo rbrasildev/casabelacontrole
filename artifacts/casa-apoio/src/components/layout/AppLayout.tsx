@@ -6,6 +6,7 @@ import {
   Wallet, 
   Package, 
   CalendarDays, 
+  HandCoins,
   BarChart3,
   Menu,
   Bell
@@ -26,6 +27,7 @@ export function AppLayout({ children }: AppLayoutProps) {
     { href: "/financeiro", label: "Financeiro", icon: Wallet },
     { href: "/estoque", label: "Estoque", icon: Package },
     { href: "/atividades", label: "Atividades", icon: CalendarDays },
+    { href: "/vaquinha", label: "Vaquinha", icon: HandCoins },
     { href: "/relatorios", label: "Relatórios", icon: BarChart3 },
   ];
 
