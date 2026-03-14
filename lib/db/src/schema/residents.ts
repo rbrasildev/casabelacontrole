@@ -1,4 +1,4 @@
-import { pgTable, serial, text, numeric, timestamp, date } from "drizzle-orm/pg-core";
+import { pgTable, serial, integer, text, numeric, timestamp, date } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
@@ -16,6 +16,17 @@ export const residentsTable = pgTable("residents", {
   room: text("room"),
   monthlyFee: numeric("monthly_fee", { precision: 10, scale: 2 }).notNull(),
   notes: text("notes"),
+  photoUrl: text("photo_url"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const residentDocumentsTable = pgTable("resident_documents", {
+  id: serial("id").primaryKey(),
+  residentId: integer("resident_id").notNull(),
+  name: text("name").notNull(),
+  objectPath: text("object_path").notNull(),
+  contentType: text("content_type"),
+  size: numeric("size"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 

@@ -15,6 +15,7 @@ import { Activities } from "@/pages/Activities";
 import { Vaquinha } from "@/pages/Vaquinha";
 import { Reports } from "@/pages/Reports";
 import { Users } from "@/pages/Users";
+import { ResidentProfile } from "@/pages/ResidentProfile";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -51,6 +52,7 @@ function AuthenticatedApp() {
     <AppLayout>
       <Switch>
         <Route path="/" component={Dashboard} />
+        <Route path="/residentes/:id" component={ResidentProfile} />
         <Route path="/residentes" component={Residents} />
         <Route path="/financeiro" component={Finances} />
         <Route path="/estoque" component={Inventory} />

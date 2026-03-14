@@ -59,6 +59,12 @@ artifacts-monorepo/
 - Listagem com busca e filtro por status
 - Cadastro completo (nome, CPF, data de nascimento, telefone, contato de emergência, quarto, mensalidade)
 - Status: ativo / desligado
+- Perfil do residente (`/residentes/:id`) com:
+  - Foto do residente (upload via object storage)
+  - Dados pessoais, contato de emergência, informações de entrada
+  - Observações editáveis in-line
+  - Gestão de documentos: anexar, visualizar, excluir (upload via GCS presigned URLs)
+- Botão "Visualizar" no menu de ações da listagem
 
 ### Financeiro
 - Controle de entradas e saídas

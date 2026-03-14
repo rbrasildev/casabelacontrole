@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { formatCurrency, formatDate } from "@/lib/format";
 import { 
-  Users, Plus, Search, MoreVertical, Edit, Trash2, ShieldAlert, Phone
+  Users, Plus, Search, MoreVertical, Edit, Trash2, ShieldAlert, Phone, Eye
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,6 +17,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import { useLocation } from "wouter";
 
 // Zod schema for form validation based on API schema
 const residentSchema = z.object({
@@ -37,6 +38,7 @@ const residentSchema = z.object({
 type ResidentFormValues = z.infer<typeof residentSchema>;
 
 export function Residents() {
+  const [, navigate] = useLocation();
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [search, setSearch] = useState("");
@@ -227,6 +229,9 @@ export function Residents() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="rounded-xl">
+                          <DropdownMenuItem onClick={() => navigate(`/residentes/${r.id}`)} className="cursor-pointer">
+                            <Eye className="w-4 h-4 mr-2" /> Visualizar
+                          </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => openEdit(r)} className="cursor-pointer">
                             <Edit className="w-4 h-4 mr-2" /> Editar
                           </DropdownMenuItem>
