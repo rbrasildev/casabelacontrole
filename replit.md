@@ -103,6 +103,12 @@ artifacts-monorepo/
 - Exclusão de usuários com confirmação
 - Acesso restrito a administradores e gerentes
 
+### Configurações (admin/manager)
+- Dados Gerais: nome, descrição, CNPJ, chave PIX, endereço completo
+- Imagens: upload de logo principal e favicon (via presigned URLs)
+- Contato & Redes: telefone, e-mail, website, Instagram, Facebook
+- Dados salvos em tabela key-value `settings`
+
 ### Notificações
 - Sino de notificações no header com contagem de não lidas
 - Notificações automáticas geradas em tempo real:
@@ -126,6 +132,7 @@ artifacts-monorepo/
 - `campaigns` - Campanhas de vaquinha
 - `contributions` - Contribuições das campanhas
 - `notifications` - Notificações do sistema
+- `settings` - Configurações da instituição (key-value)
 
 ## API Routes
 
@@ -152,6 +159,9 @@ All routes prefixed with `/api`:
 - `GET/POST /finances/recurring` - Despesas fixas
 - `PUT/DELETE /finances/recurring/:id` - Operações individuais
 - `POST /finances/recurring/generate` - Gerar lançamentos do mês
+- `GET/PUT /settings` - Configurações da instituição
+- `POST /settings/upload-logo` - URL de upload para logo/favicon
+- `POST /settings/confirm-logo` - Confirmar upload de logo
 - `GET/POST /campaigns` - Campanhas de vaquinha
 - `PUT/DELETE /campaigns/:id` - Operações individuais
 - `POST /campaigns/:id/contributions` - Adicionar contribuição

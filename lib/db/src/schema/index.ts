@@ -5,3 +5,4 @@ export * from "./activities";
 export * from "./campaigns";
 export * from "./auth";
 export * from "./notifications";
+export * from "./settings";

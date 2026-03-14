@@ -348,6 +348,30 @@ export interface CreateContribution {
   notes?: string | null;
 }
 
+export interface Settings {
+  org_name?: string | null;
+  org_description?: string | null;
+  org_cnpj?: string | null;
+  org_phone?: string | null;
+  org_email?: string | null;
+  org_address?: string | null;
+  org_city?: string | null;
+  org_state?: string | null;
+  org_zip?: string | null;
+  org_logo?: string | null;
+  org_favicon?: string | null;
+  org_pix_key?: string | null;
+  org_website?: string | null;
+  org_instagram?: string | null;
+  org_facebook?: string | null;
+}
+
+export interface LogoUploadResponse {
+  uploadUrl: string;
+  objectPath: string;
+  settingKey: string;
+}
+
 export interface Notification {
   id: number;
   type: string;
@@ -424,3 +448,16 @@ export const ListActivitiesStatus = {
   cancelled: "cancelled",
   all: "all",
 } as const;
+
+export type UploadLogoBody = {
+  type?: string;
+};
+
+export type ConfirmLogoUploadBody = {
+  objectPath: string;
+  settingKey: string;
+};
+
+export type ConfirmLogoUpload200 = {
+  path?: string;
+};

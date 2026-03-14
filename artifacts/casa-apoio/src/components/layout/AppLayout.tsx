@@ -11,6 +11,7 @@ import {
   Menu,
   LogOut,
   UserCog,
+  Settings,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -39,7 +40,10 @@ export function AppLayout({ children }: AppLayoutProps) {
     { href: "/atividades", label: "Atividades", icon: CalendarDays },
     { href: "/vaquinha", label: "Vaquinha", icon: HandCoins },
     { href: "/relatorios", label: "Relatórios", icon: BarChart3 },
-    ...(isAdmin ? [{ href: "/usuarios", label: "Usuários", icon: UserCog }] : []),
+    ...(isAdmin ? [
+      { href: "/usuarios", label: "Usuários", icon: UserCog },
+      { href: "/configuracoes", label: "Configurações", icon: Settings },
+    ] : []),
   ];
 
   const userDisplayName = user

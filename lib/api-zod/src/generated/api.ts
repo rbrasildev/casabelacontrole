@@ -721,6 +721,91 @@ export const GetDashboardStatsResponse = zod.object({
 });
 
 /**
+ * @summary Get all settings
+ */
+export const GetSettingsResponse = zod.object({
+  org_name: zod.string().nullish(),
+  org_description: zod.string().nullish(),
+  org_cnpj: zod.string().nullish(),
+  org_phone: zod.string().nullish(),
+  org_email: zod.string().nullish(),
+  org_address: zod.string().nullish(),
+  org_city: zod.string().nullish(),
+  org_state: zod.string().nullish(),
+  org_zip: zod.string().nullish(),
+  org_logo: zod.string().nullish(),
+  org_favicon: zod.string().nullish(),
+  org_pix_key: zod.string().nullish(),
+  org_website: zod.string().nullish(),
+  org_instagram: zod.string().nullish(),
+  org_facebook: zod.string().nullish(),
+});
+
+/**
+ * @summary Update settings
+ */
+export const UpdateSettingsBody = zod.object({
+  org_name: zod.string().nullish(),
+  org_description: zod.string().nullish(),
+  org_cnpj: zod.string().nullish(),
+  org_phone: zod.string().nullish(),
+  org_email: zod.string().nullish(),
+  org_address: zod.string().nullish(),
+  org_city: zod.string().nullish(),
+  org_state: zod.string().nullish(),
+  org_zip: zod.string().nullish(),
+  org_logo: zod.string().nullish(),
+  org_favicon: zod.string().nullish(),
+  org_pix_key: zod.string().nullish(),
+  org_website: zod.string().nullish(),
+  org_instagram: zod.string().nullish(),
+  org_facebook: zod.string().nullish(),
+});
+
+export const UpdateSettingsResponse = zod.object({
+  org_name: zod.string().nullish(),
+  org_description: zod.string().nullish(),
+  org_cnpj: zod.string().nullish(),
+  org_phone: zod.string().nullish(),
+  org_email: zod.string().nullish(),
+  org_address: zod.string().nullish(),
+  org_city: zod.string().nullish(),
+  org_state: zod.string().nullish(),
+  org_zip: zod.string().nullish(),
+  org_logo: zod.string().nullish(),
+  org_favicon: zod.string().nullish(),
+  org_pix_key: zod.string().nullish(),
+  org_website: zod.string().nullish(),
+  org_instagram: zod.string().nullish(),
+  org_facebook: zod.string().nullish(),
+});
+
+/**
+ * @summary Get presigned URL for logo upload
+ */
+export const UploadLogoBody = zod.object({
+  type: zod.string().optional(),
+});
+
+export const UploadLogoResponse = zod.object({
+  uploadUrl: zod.string(),
+  objectPath: zod.string(),
+  settingKey: zod.string(),
+});
+
+/**
+ * @summary Confirm logo upload and save path
+ */
+export const ConfirmLogoUploadBody = zod.object({
+  objectPath: zod.string(),
+  settingKey: zod.string(),
+});
+
+export const ConfirmLogoUploadResponse = zod.object({
+  path: zod.string().optional(),
+});
+
+/**
  * @summary List notifications
  */
 export const ListNotificationsResponseItem = zod.object({

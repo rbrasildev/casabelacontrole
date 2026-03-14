@@ -695,6 +695,88 @@ paths:
               schema:
                 $ref: "#/components/schemas/DashboardStats"
 
+  /settings:
+    get:
+      operationId: getSettings
+      tags: [settings]
+      summary: Get all settings
+      responses:
+        "200":
+          description: Settings object
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Settings"
+    put:
+      operationId: updateSettings
+      tags: [settings]
+      summary: Update settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Settings"
+      responses:
+        "200":
+          description: Updated settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Settings"
+
+  /settings/upload-logo:
+    post:
+      operationId: uploadLogo
+      tags: [settings]
+      summary: Get presigned URL for logo upload
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                type:
+                  type: string
+      responses:
+        "200":
+          description: Upload URL
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LogoUploadResponse"
+
+  /settings/confirm-logo:
+    post:
+      operationId: confirmLogoUpload
+      tags: [settings]
+      summary: Confirm logo upload and save path
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                objectPath:
+                  type: string
+                settingKey:
+                  type: string
+              required:
+                - objectPath
+                - settingKey
+      responses:
+        "200":
+          description: Confirmed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  path:
+                    type: string
+
   /notifications:
     get:
       operationId: listNotifications
@@ -1310,6 +1392,69 @@ components:
       required:
         - contributorName
         - amount
+
+    Settings:
+      type: object
+      properties:
+        org_name:
+          type: string
+          nullable: true
+        org_description:
+          type: string
+          nullable: true
+        org_cnpj:
+          type: string
+          nullable: true
+        org_phone:
+          type: string
+          nullable: true
+        org_email:
+          type: string
+          nullable: true
+        org_address:
+          type: string
+          nullable: true
+        org_city:
+          type: string
+          nullable: true
+        org_state:
+          type: string
+          nullable: true
+        org_zip:
+          type: string
+          nullable: true
+        org_logo:
+          type: string
+          nullable: true
+        org_favicon:
+          type: string
+          nullable: true
+        org_pix_key:
+          type: string
+          nullable: true
+        org_website:
+          type: string
+          nullable: true
+        org_instagram:
+          type: string
+          nullable: true
+        org_facebook:
+          type: string
+          nullable: true
+
+    LogoUploadResponse:
+      type: object
+      properties:
+        uploadUrl:
+          type: string
+        objectPath:
+          type: string
+        settingKey:
+          type: string
+      required:
+        - uploadUrl
+        - objectPath
+        - settingKey
 
     Notification:
       type: object

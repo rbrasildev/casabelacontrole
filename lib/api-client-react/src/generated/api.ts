@@ -21,6 +21,8 @@ import type {
   AuthUserEnvelope,
   BeginBrowserLoginParams,
   Campaign,
+  ConfirmLogoUpload200,
+  ConfirmLogoUploadBody,
   Contribution,
   CreateActivity,
   CreateCampaign,
@@ -38,11 +40,14 @@ import type {
   ListActivitiesParams,
   ListFinancesParams,
   ListResidentsParams,
+  LogoUploadResponse,
   LogoutMobileSessionResponse,
   Notification,
   Resident,
+  Settings,
   UnreadCount,
   UpdateUserBody,
+  UploadLogoBody,
   UserRecord,
 } from "./api.schemas";
 
@@ -3164,6 +3169,337 @@ export function useGetDashboardStats<
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
+
+/**
+ * @summary Get all settings
+ */
+export const getGetSettingsUrl = () => {
+  return `/api/settings`;
+};
+
+export const getSettings = async (options?: RequestInit): Promise<Settings> => {
+  return customFetch<Settings>(getGetSettingsUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetSettingsQueryKey = () => {
+  return [`/api/settings`] as const;
+};
+
+export const getGetSettingsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getSettings>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getSettings>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetSettingsQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getSettings>>> = ({
+    signal,
+  }) => getSettings({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getSettings>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetSettingsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getSettings>>
+>;
+export type GetSettingsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get all settings
+ */
+
+export function useGetSettings<
+  TData = Awaited<ReturnType<typeof getSettings>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getSettings>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetSettingsQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Update settings
+ */
+export const getUpdateSettingsUrl = () => {
+  return `/api/settings`;
+};
+
+export const updateSettings = async (
+  settings: Settings,
+  options?: RequestInit,
+): Promise<Settings> => {
+  return customFetch<Settings>(getUpdateSettingsUrl(), {
+    ...options,
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(settings),
+  });
+};
+
+export const getUpdateSettingsMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateSettings>>,
+    TError,
+    { data: BodyType<Settings> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateSettings>>,
+  TError,
+  { data: BodyType<Settings> },
+  TContext
+> => {
+  const mutationKey = ["updateSettings"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateSettings>>,
+    { data: BodyType<Settings> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return updateSettings(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateSettingsMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateSettings>>
+>;
+export type UpdateSettingsMutationBody = BodyType<Settings>;
+export type UpdateSettingsMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Update settings
+ */
+export const useUpdateSettings = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateSettings>>,
+    TError,
+    { data: BodyType<Settings> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateSettings>>,
+  TError,
+  { data: BodyType<Settings> },
+  TContext
+> => {
+  return useMutation(getUpdateSettingsMutationOptions(options));
+};
+
+/**
+ * @summary Get presigned URL for logo upload
+ */
+export const getUploadLogoUrl = () => {
+  return `/api/settings/upload-logo`;
+};
+
+export const uploadLogo = async (
+  uploadLogoBody: UploadLogoBody,
+  options?: RequestInit,
+): Promise<LogoUploadResponse> => {
+  return customFetch<LogoUploadResponse>(getUploadLogoUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(uploadLogoBody),
+  });
+};
+
+export const getUploadLogoMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof uploadLogo>>,
+    TError,
+    { data: BodyType<UploadLogoBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof uploadLogo>>,
+  TError,
+  { data: BodyType<UploadLogoBody> },
+  TContext
+> => {
+  const mutationKey = ["uploadLogo"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof uploadLogo>>,
+    { data: BodyType<UploadLogoBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return uploadLogo(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UploadLogoMutationResult = NonNullable<
+  Awaited<ReturnType<typeof uploadLogo>>
+>;
+export type UploadLogoMutationBody = BodyType<UploadLogoBody>;
+export type UploadLogoMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Get presigned URL for logo upload
+ */
+export const useUploadLogo = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof uploadLogo>>,
+    TError,
+    { data: BodyType<UploadLogoBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof uploadLogo>>,
+  TError,
+  { data: BodyType<UploadLogoBody> },
+  TContext
+> => {
+  return useMutation(getUploadLogoMutationOptions(options));
+};
+
+/**
+ * @summary Confirm logo upload and save path
+ */
+export const getConfirmLogoUploadUrl = () => {
+  return `/api/settings/confirm-logo`;
+};
+
+export const confirmLogoUpload = async (
+  confirmLogoUploadBody: ConfirmLogoUploadBody,
+  options?: RequestInit,
+): Promise<ConfirmLogoUpload200> => {
+  return customFetch<ConfirmLogoUpload200>(getConfirmLogoUploadUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(confirmLogoUploadBody),
+  });
+};
+
+export const getConfirmLogoUploadMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof confirmLogoUpload>>,
+    TError,
+    { data: BodyType<ConfirmLogoUploadBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof confirmLogoUpload>>,
+  TError,
+  { data: BodyType<ConfirmLogoUploadBody> },
+  TContext
+> => {
+  const mutationKey = ["confirmLogoUpload"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof confirmLogoUpload>>,
+    { data: BodyType<ConfirmLogoUploadBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return confirmLogoUpload(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type ConfirmLogoUploadMutationResult = NonNullable<
+  Awaited<ReturnType<typeof confirmLogoUpload>>
+>;
+export type ConfirmLogoUploadMutationBody = BodyType<ConfirmLogoUploadBody>;
+export type ConfirmLogoUploadMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Confirm logo upload and save path
+ */
+export const useConfirmLogoUpload = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof confirmLogoUpload>>,
+    TError,
+    { data: BodyType<ConfirmLogoUploadBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof confirmLogoUpload>>,
+  TError,
+  { data: BodyType<ConfirmLogoUploadBody> },
+  TContext
+> => {
+  return useMutation(getConfirmLogoUploadMutationOptions(options));
+};
 
 /**
  * @summary List notifications
