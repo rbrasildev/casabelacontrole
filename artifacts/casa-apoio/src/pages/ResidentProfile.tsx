@@ -83,7 +83,7 @@ export function ResidentProfile() {
   const [deleteDocId, setDeleteDocId] = useState<number | null>(null);
   const [isDocDialogOpen, setIsDocDialogOpen] = useState(false);
   const [docName, setDocName] = useState("");
-  const [selectedDocFiles, setSelectedDocFiles] = useState<FileList | null>(null);
+  const [selectedDocFiles, setSelectedDocFiles] = useState<File[]>([]);
   const photoInputRef = useRef<HTMLInputElement>(null);
   const docInputRef = useRef<HTMLInputElement>(null);
 
@@ -159,19 +159,19 @@ export function ResidentProfile() {
   function handleDocFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const files = e.target.files;
     if (!files?.length) return;
-    setSelectedDocFiles(files);
+    setSelectedDocFiles(Array.from(files));
     setDocName("");
     setIsDocDialogOpen(true);
     if (docInputRef.current) docInputRef.current.value = "";
   }
 
   async function handleDocUploadConfirm() {
-    if (!selectedDocFiles?.length || !docName.trim()) return;
+    if (!selectedDocFiles.length || !docName.trim()) return;
 
     setIsUploadingDoc(true);
     setIsDocDialogOpen(false);
     try {
-      for (const file of Array.from(selectedDocFiles)) {
+      for (const file of selectedDocFiles) {
         const { objectPath } = await uploadFileToStorage(file);
         const res = await fetch(`${BASE}/api/residents/${residentId}/documents`, {
           method: "POST",
@@ -192,7 +192,7 @@ export function ResidentProfile() {
       toast({ title: "Erro ao enviar documento", variant: "destructive" });
     } finally {
       setIsUploadingDoc(false);
-      setSelectedDocFiles(null);
+      setSelectedDocFiles([]);
       setDocName("");
     }
   }
@@ -498,7 +498,7 @@ export function ResidentProfile() {
       </div>
 
       <Dialog open={isDocDialogOpen} onOpenChange={(open) => {
-        if (!open) { setIsDocDialogOpen(false); setSelectedDocFiles(null); setDocName(""); }
+        if (!open) { setIsDocDialogOpen(false); setSelectedDocFiles([]); setDocName(""); }
       }}>
         <DialogContent className="sm:max-w-[450px] rounded-2xl">
           <DialogHeader>
@@ -516,17 +516,17 @@ export function ResidentProfile() {
                 autoFocus
               />
             </div>
-            {selectedDocFiles && (
+            {selectedDocFiles.length > 0 && (
               <div className="text-sm text-muted-foreground bg-secondary/50 p-3 rounded-lg">
                 <p className="font-medium text-foreground mb-1">Arquivo selecionado:</p>
-                {Array.from(selectedDocFiles).map((f, i) => (
+                {selectedDocFiles.map((f, i) => (
                   <p key={i} className="truncate">{f.name} ({formatFileSize(f.size)})</p>
                 ))}
               </div>
             )}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => { setIsDocDialogOpen(false); setSelectedDocFiles(null); setDocName(""); }} className="rounded-xl">
+            <Button variant="outline" onClick={() => { setIsDocDialogOpen(false); setSelectedDocFiles([]); setDocName(""); }} className="rounded-xl">
               Cancelar
             </Button>
             <Button onClick={handleDocUploadConfirm} disabled={!docName.trim() || isUploadingDoc} className="rounded-xl">
