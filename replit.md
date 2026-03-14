@@ -16,7 +16,7 @@ Sistema de Gestão para Casa de Apoio — uma plataforma web completa para geren
 - **API codegen**: Orval (from OpenAPI spec)
 - **Build**: esbuild (CJS bundle)
 - **Frontend**: React + Vite, TailwindCSS, shadcn/ui, Recharts, React Query
-- **Auth**: Replit Auth (OIDC/PKCE) via `@workspace/replit-auth-web`
+- **Auth**: Custom email/password auth with bcrypt + cookie sessions
 
 ## Structure
 
@@ -30,7 +30,7 @@ artifacts-monorepo/
 │   ├── api-client-react/   # Generated React Query hooks
 │   ├── api-zod/            # Generated Zod schemas from OpenAPI
 │   ├── db/                 # Drizzle ORM schema + DB connection
-│   └── replit-auth-web/    # Auth hook for React frontend
+│   └── replit-auth-web/    # (unused, replaced by custom auth)
 ├── scripts/                # Utility scripts
 ├── pnpm-workspace.yaml
 ├── tsconfig.base.json
@@ -41,11 +41,13 @@ artifacts-monorepo/
 ## Features
 
 ### Authentication & Authorization
-- Replit Auth via OIDC/PKCE (no custom login forms)
+- Custom email/password registration and login
+- Passwords hashed with bcrypt (12 rounds)
 - Role-based access: admin, manager, staff, viewer
 - User management page (admin/manager only)
 - Inactive user session invalidation
 - Session stored in PostgreSQL with 7-day TTL
+- Frontend auth hook at `src/hooks/use-auth.ts`
 
 ### Dashboard
 - Visão geral com métricas principais
@@ -110,8 +112,9 @@ artifacts-monorepo/
 All routes prefixed with `/api`:
 - `GET /auth/user` - Usuário autenticado atual
 - `GET /auth/me` - Dados completos do usuário (com cargo)
-- `GET/LOGIN /login` - Inicia fluxo OIDC
-- `GET /logout` - Encerra sessão
+- `POST /auth/register` - Cadastro com email/senha
+- `POST /auth/login` - Login com email/senha
+- `POST /auth/logout` - Encerra sessão
 - `GET/PUT/DELETE /users/:id` - Gerenciar usuários (admin/manager)
 - `GET/POST /residents` - Lista e cria residentes
 - `GET/PUT/DELETE /residents/:id` - Operações individuais
