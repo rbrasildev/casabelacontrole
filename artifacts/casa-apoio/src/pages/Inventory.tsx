@@ -33,9 +33,9 @@ export function Inventory() {
 
   const { data: items, isLoading } = useListInventory();
 
-  const createMut = useCreateInventoryItem({ onSuccess: () => invalidate() });
-  const updateMut = useUpdateInventoryItem({ onSuccess: () => invalidate() });
-  const deleteMut = useDeleteInventoryItem({ onSuccess: () => invalidate() });
+  const createMut = useCreateInventoryItem({ mutation: { onSuccess: () => invalidate() } });
+  const updateMut = useUpdateInventoryItem({ mutation: { onSuccess: () => invalidate() } });
+  const deleteMut = useDeleteInventoryItem({ mutation: { onSuccess: () => invalidate() } });
 
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: getListInventoryQueryKey() });
