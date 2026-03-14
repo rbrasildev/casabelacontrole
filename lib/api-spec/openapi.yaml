@@ -109,6 +109,80 @@ paths:
               schema:
                 $ref: "#/components/schemas/LogoutMobileSessionResponse"
 
+  /users:
+    get:
+      operationId: listUsers
+      tags: [Auth]
+      summary: List all registered users
+      responses:
+        "200":
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/UserRecord"
+
+  /users/{id}:
+    get:
+      operationId: getUser
+      tags: [Auth]
+      summary: Get user by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: User details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserRecord"
+    put:
+      operationId: updateUser
+      tags: [Auth]
+      summary: Update user role/status
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateUserBody"
+      responses:
+        "200":
+          description: User updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserRecord"
+    delete:
+      operationId: deleteUser
+      tags: [Auth]
+      summary: Delete user
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeleteResponse"
+
   /residents:
     get:
       operationId: listResidents
@@ -686,6 +760,57 @@ components:
       properties:
         success:
           type: boolean
+
+    UserRecord:
+      type: object
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+          nullable: true
+        firstName:
+          type: string
+          nullable: true
+        lastName:
+          type: string
+          nullable: true
+        profileImageUrl:
+          type: string
+          nullable: true
+        role:
+          type: string
+          enum: [admin, manager, staff, viewer]
+        isActive:
+          type: boolean
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - id
+        - role
+        - isActive
+        - createdAt
+        - updatedAt
+
+    UpdateUserBody:
+      type: object
+      properties:
+        role:
+          type: string
+          enum: [admin, manager, staff, viewer]
+        isActive:
+          type: boolean
+        firstName:
+          type: string
+          nullable: true
+        lastName:
+          type: string
+          nullable: true
+        email:
+          type: string
+          nullable: true
 
     HealthStatus:
       type: object

@@ -11,18 +11,25 @@ import {
   Menu,
   Bell,
   LogOut,
+  UserCog,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@workspace/replit-auth-web";
+import { useCurrentUser } from "@/hooks/use-current-user";
 
 interface AppLayoutProps {
   children: ReactNode;
 }
 
+const ADMIN_ROLES = ["admin", "manager"];
+
 export function AppLayout({ children }: AppLayoutProps) {
   const [location] = useLocation();
   const { user, logout } = useAuth();
+  const { data: currentUser } = useCurrentUser();
+
+  const isAdmin = currentUser ? ADMIN_ROLES.includes(currentUser.role) : false;
 
   const navItems = [
     { href: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -32,6 +39,7 @@ export function AppLayout({ children }: AppLayoutProps) {
     { href: "/atividades", label: "Atividades", icon: CalendarDays },
     { href: "/vaquinha", label: "Vaquinha", icon: HandCoins },
     { href: "/relatorios", label: "Relatórios", icon: BarChart3 },
+    ...(isAdmin ? [{ href: "/usuarios", label: "Usuários", icon: UserCog }] : []),
   ];
 
   const userDisplayName = user
@@ -47,7 +55,6 @@ export function AppLayout({ children }: AppLayoutProps) {
 
   return (
     <div className="flex h-screen bg-background overflow-hidden">
-      {/* Sidebar */}
       <aside className="hidden md:flex flex-col w-64 bg-card border-r border-border shadow-sm z-10">
         <div className="p-6 flex items-center gap-3">
           <div className="bg-primary/10 p-2 rounded-xl">
@@ -114,9 +121,7 @@ export function AppLayout({ children }: AppLayoutProps) {
         </div>
       </aside>
 
-      {/* Main Content */}
       <main className="flex-1 flex flex-col h-full relative overflow-hidden">
-        {/* Mobile Header */}
         <header className="md:hidden flex items-center justify-between p-4 bg-card border-b border-border z-10">
           <div className="flex items-center gap-2">
             <img src={`${import.meta.env.BASE_URL}images/logo.png`} alt="Logo" className="w-8 h-8 object-contain" />
@@ -127,7 +132,6 @@ export function AppLayout({ children }: AppLayoutProps) {
           </Button>
         </header>
 
-        {/* Desktop Topbar */}
         <header className="hidden md:flex h-20 items-center justify-end px-8 bg-background/80 backdrop-blur-md sticky top-0 z-10">
           <div className="flex items-center gap-4">
             <Button variant="outline" size="icon" className="rounded-full bg-card hover:bg-secondary hover:text-primary transition-colors relative">
@@ -137,7 +141,6 @@ export function AppLayout({ children }: AppLayoutProps) {
           </div>
         </header>
 
-        {/* Page Content */}
         <div className="flex-1 overflow-auto p-4 md:p-8 scroll-smooth">
           <div className="max-w-7xl mx-auto w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
             {children}

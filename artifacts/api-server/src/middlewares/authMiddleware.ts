@@ -1,6 +1,9 @@
 import * as oidc from "openid-client";
 import { type Request, type Response, type NextFunction } from "express";
 import type { AuthUser } from "@workspace/api-zod";
+import { db } from "@workspace/db";
+import { usersTable } from "@workspace/db/schema";
+import { eq } from "drizzle-orm";
 import {
   clearSession,
   getOidcConfig,
@@ -77,6 +80,18 @@ export async function authMiddleware(
 
   const refreshed = await refreshIfExpired(sid, session);
   if (!refreshed) {
+    await clearSession(res, sid);
+    next();
+    return;
+  }
+
+  const [dbUser] = await db
+    .select({ isActive: usersTable.isActive })
+    .from(usersTable)
+    .where(eq(usersTable.id, refreshed.user.id))
+    .limit(1);
+
+  if (dbUser && !dbUser.isActive) {
     await clearSession(res, sid);
     next();
     return;

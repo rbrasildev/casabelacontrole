@@ -45,3 +45,7 @@ export * from "./listResidentsStatus";
 export * from "./logoutMobileSessionResponse";
 export * from "./resident";
 export * from "./residentStatus";
+export * from "./updateUserBody";
+export * from "./updateUserBodyRole";
+export * from "./userRecord";
+export * from "./userRecordRole";

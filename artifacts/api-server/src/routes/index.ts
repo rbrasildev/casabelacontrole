@@ -7,11 +7,13 @@ import inventoryRouter from "./inventory";
 import activitiesRouter from "./activities";
 import dashboardRouter from "./dashboard";
 import campaignsRouter from "./campaigns";
+import usersRouter from "./users";
 
 const router: IRouter = Router();
 
 router.use(healthRouter);
 router.use(authRouter);
+router.use("/users", usersRouter);
 router.use("/residents", residentsRouter);
 router.use("/finances", financesRouter);
 router.use("/inventory", inventoryRouter);

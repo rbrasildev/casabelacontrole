@@ -38,6 +38,46 @@ export interface LogoutMobileSessionResponse {
   success: boolean;
 }
 
+export type UserRecordRole =
+  (typeof UserRecordRole)[keyof typeof UserRecordRole];
+
+export const UserRecordRole = {
+  admin: "admin",
+  manager: "manager",
+  staff: "staff",
+  viewer: "viewer",
+} as const;
+
+export interface UserRecord {
+  id: string;
+  email?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
+  profileImageUrl?: string | null;
+  role: UserRecordRole;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type UpdateUserBodyRole =
+  (typeof UpdateUserBodyRole)[keyof typeof UpdateUserBodyRole];
+
+export const UpdateUserBodyRole = {
+  admin: "admin",
+  manager: "manager",
+  staff: "staff",
+  viewer: "viewer",
+} as const;
+
+export interface UpdateUserBody {
+  role?: UpdateUserBodyRole;
+  isActive?: boolean;
+  firstName?: string | null;
+  lastName?: string | null;
+  email?: string | null;
+}
+
 export interface HealthStatus {
   status: string;
 }

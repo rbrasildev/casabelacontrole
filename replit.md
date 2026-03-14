@@ -16,6 +16,7 @@ Sistema de Gestão para Casa de Apoio — uma plataforma web completa para geren
 - **API codegen**: Orval (from OpenAPI spec)
 - **Build**: esbuild (CJS bundle)
 - **Frontend**: React + Vite, TailwindCSS, shadcn/ui, Recharts, React Query
+- **Auth**: Replit Auth (OIDC/PKCE) via `@workspace/replit-auth-web`
 
 ## Structure
 
@@ -28,7 +29,8 @@ artifacts-monorepo/
 │   ├── api-spec/           # OpenAPI spec + Orval codegen config
 │   ├── api-client-react/   # Generated React Query hooks
 │   ├── api-zod/            # Generated Zod schemas from OpenAPI
-│   └── db/                 # Drizzle ORM schema + DB connection
+│   ├── db/                 # Drizzle ORM schema + DB connection
+│   └── replit-auth-web/    # Auth hook for React frontend
 ├── scripts/                # Utility scripts
 ├── pnpm-workspace.yaml
 ├── tsconfig.base.json
@@ -37,6 +39,13 @@ artifacts-monorepo/
 ```
 
 ## Features
+
+### Authentication & Authorization
+- Replit Auth via OIDC/PKCE (no custom login forms)
+- Role-based access: admin, manager, staff, viewer
+- User management page (admin/manager only)
+- Inactive user session invalidation
+- Session stored in PostgreSQL with 7-day TTL
 
 ### Dashboard
 - Visão geral com métricas principais
@@ -66,21 +75,44 @@ artifacts-monorepo/
 - Status: pendente, concluída, cancelada
 - Vínculo opcional com residente
 
+### Vaquinha (Crowdfunding)
+- Campanhas com meta, valor arrecadado, progresso
+- Contribuições com rastreamento de doadores
+- Chave PIX com botão de cópia
+- CRUD completo de campanhas e contribuições
+
 ### Relatórios
 - Gráficos de fluxo financeiro mensal
 - Distribuição de residentes por status
 - Visão geral de categorias de despesas
 
+### Registro de Usuários
+- Listagem de todos os usuários cadastrados
+- Filtro por nome, e-mail e cargo
+- Alterar cargo (admin, gerente, colaborador, visualizador)
+- Ativar/desativar usuários
+- Exclusão de usuários com confirmação
+- Acesso restrito a administradores e gerentes
+
 ## Database Schema
 
+- `users` - Usuários do sistema (id, email, nome, cargo, status ativo)
+- `sessions` - Sessões de autenticação
 - `residents` - Residentes da casa
 - `finances` - Transações financeiras
 - `inventory` - Itens de estoque
 - `activities` - Atividades e agenda
+- `campaigns` - Campanhas de vaquinha
+- `contributions` - Contribuições das campanhas
 
 ## API Routes
 
 All routes prefixed with `/api`:
+- `GET /auth/user` - Usuário autenticado atual
+- `GET /auth/me` - Dados completos do usuário (com cargo)
+- `GET/LOGIN /login` - Inicia fluxo OIDC
+- `GET /logout` - Encerra sessão
+- `GET/PUT/DELETE /users/:id` - Gerenciar usuários (admin/manager)
 - `GET/POST /residents` - Lista e cria residentes
 - `GET/PUT/DELETE /residents/:id` - Operações individuais
 - `GET/POST /finances` - Lista e cria transações
@@ -90,10 +122,14 @@ All routes prefixed with `/api`:
 - `GET/POST /activities` - Lista e cria atividades
 - `PUT/DELETE /activities/:id` - Operações individuais
 - `GET /dashboard/stats` - Estatísticas do dashboard
+- `GET/POST /campaigns` - Campanhas de vaquinha
+- `PUT/DELETE /campaigns/:id` - Operações individuais
+- `POST /campaigns/:id/contributions` - Adicionar contribuição
+- `DELETE /contributions/:id` - Remover contribuição
 
 ## Running
 
 - Frontend: `pnpm --filter @workspace/casa-apoio run dev` (port 23522)
 - API: `pnpm --filter @workspace/api-server run dev` (port 8080)
-- DB push: `pnpm --filter @workspace/db run push`
+- DB push: `cd lib/db && pnpm exec drizzle-kit push`
 - Codegen: `pnpm --filter @workspace/api-spec run codegen`

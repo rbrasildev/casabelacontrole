@@ -61,6 +61,80 @@ export const LogoutMobileSessionResponse = zod.object({
 });
 
 /**
+ * @summary List all registered users
+ */
+export const ListUsersResponseItem = zod.object({
+  id: zod.string(),
+  email: zod.string().nullish(),
+  firstName: zod.string().nullish(),
+  lastName: zod.string().nullish(),
+  profileImageUrl: zod.string().nullish(),
+  role: zod.enum(["admin", "manager", "staff", "viewer"]),
+  isActive: zod.boolean(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});
+export const ListUsersResponse = zod.array(ListUsersResponseItem);
+
+/**
+ * @summary Get user by ID
+ */
+export const GetUserParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const GetUserResponse = zod.object({
+  id: zod.string(),
+  email: zod.string().nullish(),
+  firstName: zod.string().nullish(),
+  lastName: zod.string().nullish(),
+  profileImageUrl: zod.string().nullish(),
+  role: zod.enum(["admin", "manager", "staff", "viewer"]),
+  isActive: zod.boolean(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});
+
+/**
+ * @summary Update user role/status
+ */
+export const UpdateUserParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const UpdateUserBody = zod.object({
+  role: zod.enum(["admin", "manager", "staff", "viewer"]).optional(),
+  isActive: zod.boolean().optional(),
+  firstName: zod.string().nullish(),
+  lastName: zod.string().nullish(),
+  email: zod.string().nullish(),
+});
+
+export const UpdateUserResponse = zod.object({
+  id: zod.string(),
+  email: zod.string().nullish(),
+  firstName: zod.string().nullish(),
+  lastName: zod.string().nullish(),
+  profileImageUrl: zod.string().nullish(),
+  role: zod.enum(["admin", "manager", "staff", "viewer"]),
+  isActive: zod.boolean(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});
+
+/**
+ * @summary Delete user
+ */
+export const DeleteUserParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const DeleteUserResponse = zod.object({
+  success: zod.boolean(),
+  message: zod.string(),
+});
+
+/**
  * @summary List all residents
  */
 export const ListResidentsQueryParams = zod.object({
