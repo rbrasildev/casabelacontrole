@@ -5,6 +5,39 @@
  * Casa de Apoio - API de gestão
  * OpenAPI spec version: 0.1.0
  */
+export interface AuthUser {
+  id: string;
+  email?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
+  profileImageUrl?: string | null;
+}
+
+export interface AuthUserEnvelope {
+  user: AuthUser | null;
+}
+
+export interface ExchangeMobileAuthorizationCodeBody {
+  /** @minLength 1 */
+  code: string;
+  /** @minLength 1 */
+  code_verifier: string;
+  /** @minLength 1 */
+  redirect_uri: string;
+  /** @minLength 1 */
+  state: string;
+  /** @minLength 1 */
+  nonce?: string;
+}
+
+export interface ExchangeMobileAuthorizationCodeResponse {
+  token: string;
+}
+
+export interface LogoutMobileSessionResponse {
+  success: boolean;
+}
+
 export interface HealthStatus {
   status: string;
 }
@@ -287,6 +320,10 @@ export interface DashboardStats {
   recentTransactions: FinanceTransaction[];
   upcomingActivities: Activity[];
 }
+
+export type BeginBrowserLoginParams = {
+  returnTo?: string;
+};
 
 export type ListResidentsParams = {
   status?: ListResidentsStatus;

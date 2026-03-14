@@ -9,10 +9,12 @@ import {
   HandCoins,
   BarChart3,
   Menu,
-  Bell
+  Bell,
+  LogOut,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useAuth } from "@workspace/replit-auth-web";
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -20,6 +22,7 @@ interface AppLayoutProps {
 
 export function AppLayout({ children }: AppLayoutProps) {
   const [location] = useLocation();
+  const { user, logout } = useAuth();
 
   const navItems = [
     { href: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -30,6 +33,17 @@ export function AppLayout({ children }: AppLayoutProps) {
     { href: "/vaquinha", label: "Vaquinha", icon: HandCoins },
     { href: "/relatorios", label: "Relatórios", icon: BarChart3 },
   ];
+
+  const userDisplayName = user
+    ? [user.firstName, user.lastName].filter(Boolean).join(" ") || user.email || "Usuário"
+    : "Usuário";
+
+  const userInitials = userDisplayName
+    .split(" ")
+    .map((n) => n[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
 
   return (
     <div className="flex h-screen bg-background overflow-hidden">
@@ -74,15 +88,28 @@ export function AppLayout({ children }: AppLayoutProps) {
         </nav>
 
         <div className="p-4 border-t border-border/50">
-          <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-secondary/50">
-            <Avatar className="h-9 w-9 border border-border">
-              <AvatarImage src="https://api.dicebear.com/7.x/avataaars/svg?seed=Admin" alt="Admin" />
-              <AvatarFallback>AD</AvatarFallback>
+          <div className="flex items-center gap-3 px-3 py-3 rounded-xl bg-secondary/50">
+            <Avatar className="h-9 w-9 border border-border flex-shrink-0">
+              {user?.profileImageUrl && (
+                <AvatarImage src={user.profileImageUrl} alt={userDisplayName} />
+              )}
+              <AvatarFallback className="text-xs font-semibold">{userInitials}</AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-foreground truncate">Administrador</p>
-              <p className="text-xs text-muted-foreground truncate">admin@casadeapoio.com</p>
+              <p className="text-sm font-semibold text-foreground truncate">{userDisplayName}</p>
+              {user?.email && (
+                <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+              )}
             </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={logout}
+              title="Sair"
+              className="h-8 w-8 flex-shrink-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg"
+            >
+              <LogOut className="h-4 w-4" />
+            </Button>
           </div>
         </div>
       </aside>
