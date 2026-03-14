@@ -1,0 +1,19 @@
+packages:
+  "recharts": "Data visualization for the dashboard and reports"
+  "date-fns": "For localized date formatting and parsing (pt-BR)"
+  "react-hook-form": "For robust form state management"
+  "@hookform/resolvers": "For Zod schema validation with react-hook-form"
+  "lucide-react": "For beautiful, consistent iconography"
+  "clsx": "Utility for constructing className strings conditionally"
+  "tailwind-merge": "Utility to merge tailwind classes without style conflicts"
+
+images:
+  - path: "artifacts/casa-apoio/public/images/logo.png"
+    description: "Minimalist, modern logo for a care home ('Casa de Apoio'), soft teal and warm neutral colors, simple abstract geometric house shape intertwined with a caring motif, white background"
+    aspect_ratio: "1:1"
+
+notes:
+  - Using generated Orval hooks from @workspace/api-client-react
+  - Forms use Zod validation matching the API schema requirements
+  - Dates formatted using date-fns in pt-BR locale
+  - Currency formatted using native Intl.NumberFormat in BRL

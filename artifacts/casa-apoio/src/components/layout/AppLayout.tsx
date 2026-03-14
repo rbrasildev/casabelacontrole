@@ -1,0 +1,120 @@
+import { ReactNode } from "react";
+import { Link, useLocation } from "wouter";
+import { 
+  LayoutDashboard, 
+  Users, 
+  Wallet, 
+  Package, 
+  CalendarDays, 
+  BarChart3,
+  Menu,
+  Bell
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+
+interface AppLayoutProps {
+  children: ReactNode;
+}
+
+export function AppLayout({ children }: AppLayoutProps) {
+  const [location] = useLocation();
+
+  const navItems = [
+    { href: "/", label: "Dashboard", icon: LayoutDashboard },
+    { href: "/residentes", label: "Residentes", icon: Users },
+    { href: "/financeiro", label: "Financeiro", icon: Wallet },
+    { href: "/estoque", label: "Estoque", icon: Package },
+    { href: "/atividades", label: "Atividades", icon: CalendarDays },
+    { href: "/relatorios", label: "Relatórios", icon: BarChart3 },
+  ];
+
+  return (
+    <div className="flex h-screen bg-background overflow-hidden">
+      {/* Sidebar */}
+      <aside className="hidden md:flex flex-col w-64 bg-card border-r border-border shadow-sm z-10">
+        <div className="p-6 flex items-center gap-3">
+          <div className="bg-primary/10 p-2 rounded-xl">
+            <img 
+              src={`${import.meta.env.BASE_URL}images/logo.png`} 
+              alt="Casa de Apoio Logo" 
+              className="w-8 h-8 object-contain mix-blend-multiply"
+            />
+          </div>
+          <div>
+            <h1 className="font-display font-bold text-xl text-primary leading-none">Casa de Apoio</h1>
+            <p className="text-xs text-muted-foreground font-medium">Gestão Integrada</p>
+          </div>
+        </div>
+
+        <nav className="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto">
+          {navItems.map((item) => {
+            const isActive = location === item.href || (item.href !== "/" && location.startsWith(item.href));
+            const Icon = item.icon;
+            
+            return (
+              <Link 
+                key={item.href} 
+                href={item.href}
+                className={`
+                  flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group
+                  ${isActive 
+                    ? "bg-primary text-primary-foreground shadow-md shadow-primary/20" 
+                    : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                  }
+                `}
+              >
+                <Icon className={`w-5 h-5 ${isActive ? "text-primary-foreground" : "group-hover:text-primary transition-colors"}`} />
+                <span className="font-medium">{item.label}</span>
+              </Link>
+            );
+          })}
+        </nav>
+
+        <div className="p-4 border-t border-border/50">
+          <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-secondary/50">
+            <Avatar className="h-9 w-9 border border-border">
+              <AvatarImage src="https://api.dicebear.com/7.x/avataaars/svg?seed=Admin" alt="Admin" />
+              <AvatarFallback>AD</AvatarFallback>
+            </Avatar>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-foreground truncate">Administrador</p>
+              <p className="text-xs text-muted-foreground truncate">admin@casadeapoio.com</p>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <main className="flex-1 flex flex-col h-full relative overflow-hidden">
+        {/* Mobile Header */}
+        <header className="md:hidden flex items-center justify-between p-4 bg-card border-b border-border z-10">
+          <div className="flex items-center gap-2">
+            <img src={`${import.meta.env.BASE_URL}images/logo.png`} alt="Logo" className="w-8 h-8 object-contain" />
+            <span className="font-display font-bold text-lg text-primary">Casa de Apoio</span>
+          </div>
+          <Button variant="ghost" size="icon">
+            <Menu className="w-6 h-6" />
+          </Button>
+        </header>
+
+        {/* Desktop Topbar */}
+        <header className="hidden md:flex h-20 items-center justify-end px-8 bg-background/80 backdrop-blur-md sticky top-0 z-10">
+          <div className="flex items-center gap-4">
+            <Button variant="outline" size="icon" className="rounded-full bg-card hover:bg-secondary hover:text-primary transition-colors relative">
+              <Bell className="w-5 h-5" />
+              <span className="absolute top-0 right-0 w-2.5 h-2.5 bg-destructive rounded-full border-2 border-card"></span>
+            </Button>
+          </div>
+        </header>
+
+        {/* Page Content */}
+        <div className="flex-1 overflow-auto p-4 md:p-8 scroll-smooth">
+          <div className="max-w-7xl mx-auto w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
+            {children}
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}

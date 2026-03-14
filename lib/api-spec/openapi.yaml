@@ -1,22 +1,31 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Casa de Apoio - API de gestão
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: residents
+    description: Resident management
+  - name: finances
+    description: Financial management
+  - name: inventory
+    description: Inventory management
+  - name: activities
+    description: Activities and schedule management
+  - name: dashboard
+    description: Dashboard statistics
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +33,365 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /residents:
+    get:
+      operationId: listResidents
+      tags: [residents]
+      summary: List all residents
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [active, discharged, all]
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of residents
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Resident"
+    post:
+      operationId: createResident
+      tags: [residents]
+      summary: Create a new resident
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateResident"
+      responses:
+        "201":
+          description: Resident created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Resident"
+
+  /residents/{id}:
+    get:
+      operationId: getResident
+      tags: [residents]
+      summary: Get resident by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Resident
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Resident"
+        "404":
+          description: Not found
+    put:
+      operationId: updateResident
+      tags: [residents]
+      summary: Update resident
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateResident"
+      responses:
+        "200":
+          description: Resident updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Resident"
+    delete:
+      operationId: deleteResident
+      tags: [residents]
+      summary: Delete resident
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeleteResponse"
+
+  /finances:
+    get:
+      operationId: listFinances
+      tags: [finances]
+      summary: List financial transactions
+      parameters:
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [income, expense, all]
+        - name: month
+          in: query
+          schema:
+            type: integer
+        - name: year
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of transactions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FinanceTransaction"
+    post:
+      operationId: createFinance
+      tags: [finances]
+      summary: Create financial transaction
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateFinance"
+      responses:
+        "201":
+          description: Transaction created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FinanceTransaction"
+
+  /finances/{id}:
+    put:
+      operationId: updateFinance
+      tags: [finances]
+      summary: Update transaction
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateFinance"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FinanceTransaction"
+    delete:
+      operationId: deleteFinance
+      tags: [finances]
+      summary: Delete transaction
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeleteResponse"
+
+  /inventory:
+    get:
+      operationId: listInventory
+      tags: [inventory]
+      summary: List inventory items
+      responses:
+        "200":
+          description: List of items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/InventoryItem"
+    post:
+      operationId: createInventoryItem
+      tags: [inventory]
+      summary: Create inventory item
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateInventoryItem"
+      responses:
+        "201":
+          description: Item created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InventoryItem"
+
+  /inventory/{id}:
+    put:
+      operationId: updateInventoryItem
+      tags: [inventory]
+      summary: Update inventory item
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateInventoryItem"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InventoryItem"
+    delete:
+      operationId: deleteInventoryItem
+      tags: [inventory]
+      summary: Delete inventory item
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeleteResponse"
+
+  /activities:
+    get:
+      operationId: listActivities
+      tags: [activities]
+      summary: List activities
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, completed, cancelled, all]
+      responses:
+        "200":
+          description: List of activities
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Activity"
+    post:
+      operationId: createActivity
+      tags: [activities]
+      summary: Create activity
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateActivity"
+      responses:
+        "201":
+          description: Activity created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Activity"
+
+  /activities/{id}:
+    put:
+      operationId: updateActivity
+      tags: [activities]
+      summary: Update activity
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateActivity"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Activity"
+    delete:
+      operationId: deleteActivity
+      tags: [activities]
+      summary: Delete activity
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeleteResponse"
+
+  /dashboard/stats:
+    get:
+      operationId: getDashboardStats
+      tags: [dashboard]
+      summary: Get dashboard statistics
+      responses:
+        "200":
+          description: Dashboard stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardStats"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +402,354 @@ components:
       required:
         - status
 
+    DeleteResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+      required:
+        - success
+        - message
+
+    Resident:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        cpf:
+          type: string
+        dateOfBirth:
+          type: string
+        phone:
+          type: string
+        emergencyContact:
+          type: string
+        emergencyPhone:
+          type: string
+        entryDate:
+          type: string
+        exitDate:
+          type: string
+          nullable: true
+        status:
+          type: string
+          enum: [active, discharged]
+        room:
+          type: string
+          nullable: true
+        monthlyFee:
+          type: number
+        notes:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+      required:
+        - id
+        - name
+        - cpf
+        - dateOfBirth
+        - phone
+        - emergencyContact
+        - emergencyPhone
+        - entryDate
+        - status
+        - monthlyFee
+        - createdAt
+
+    CreateResident:
+      type: object
+      properties:
+        name:
+          type: string
+        cpf:
+          type: string
+        dateOfBirth:
+          type: string
+        phone:
+          type: string
+        emergencyContact:
+          type: string
+        emergencyPhone:
+          type: string
+        entryDate:
+          type: string
+        exitDate:
+          type: string
+          nullable: true
+        status:
+          type: string
+          enum: [active, discharged]
+        room:
+          type: string
+          nullable: true
+        monthlyFee:
+          type: number
+        notes:
+          type: string
+          nullable: true
+      required:
+        - name
+        - cpf
+        - dateOfBirth
+        - phone
+        - emergencyContact
+        - emergencyPhone
+        - entryDate
+        - status
+        - monthlyFee
+
+    FinanceTransaction:
+      type: object
+      properties:
+        id:
+          type: integer
+        type:
+          type: string
+          enum: [income, expense]
+        category:
+          type: string
+        description:
+          type: string
+        amount:
+          type: number
+        date:
+          type: string
+        residentId:
+          type: integer
+          nullable: true
+        residentName:
+          type: string
+          nullable: true
+        paymentMethod:
+          type: string
+          nullable: true
+        status:
+          type: string
+          enum: [paid, pending, overdue]
+        notes:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+      required:
+        - id
+        - type
+        - category
+        - description
+        - amount
+        - date
+        - status
+        - createdAt
+
+    CreateFinance:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [income, expense]
+        category:
+          type: string
+        description:
+          type: string
+        amount:
+          type: number
+        date:
+          type: string
+        residentId:
+          type: integer
+          nullable: true
+        paymentMethod:
+          type: string
+          nullable: true
+        status:
+          type: string
+          enum: [paid, pending, overdue]
+        notes:
+          type: string
+          nullable: true
+      required:
+        - type
+        - category
+        - description
+        - amount
+        - date
+        - status
+
+    InventoryItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        category:
+          type: string
+        quantity:
+          type: integer
+        unit:
+          type: string
+        minimumQuantity:
+          type: integer
+        location:
+          type: string
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+        lastUpdated:
+          type: string
+      required:
+        - id
+        - name
+        - category
+        - quantity
+        - unit
+        - minimumQuantity
+        - lastUpdated
+
+    CreateInventoryItem:
+      type: object
+      properties:
+        name:
+          type: string
+        category:
+          type: string
+        quantity:
+          type: integer
+        unit:
+          type: string
+        minimumQuantity:
+          type: integer
+        location:
+          type: string
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+      required:
+        - name
+        - category
+        - quantity
+        - unit
+        - minimumQuantity
+
+    Activity:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+          nullable: true
+        type:
+          type: string
+          enum: [medical, therapy, recreation, administrative, cleaning, other]
+        status:
+          type: string
+          enum: [pending, completed, cancelled]
+        scheduledDate:
+          type: string
+        scheduledTime:
+          type: string
+          nullable: true
+        responsible:
+          type: string
+          nullable: true
+        residentId:
+          type: integer
+          nullable: true
+        residentName:
+          type: string
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+      required:
+        - id
+        - title
+        - type
+        - status
+        - scheduledDate
+        - createdAt
+
+    CreateActivity:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+          nullable: true
+        type:
+          type: string
+          enum: [medical, therapy, recreation, administrative, cleaning, other]
+        status:
+          type: string
+          enum: [pending, completed, cancelled]
+        scheduledDate:
+          type: string
+        scheduledTime:
+          type: string
+          nullable: true
+        responsible:
+          type: string
+          nullable: true
+        residentId:
+          type: integer
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+      required:
+        - title
+        - type
+        - status
+        - scheduledDate
+
+    DashboardStats:
+      type: object
+      properties:
+        totalResidents:
+          type: integer
+        activeResidents:
+          type: integer
+        monthlyIncome:
+          type: number
+        monthlyExpenses:
+          type: number
+        monthlyBalance:
+          type: number
+        pendingPayments:
+          type: integer
+        lowStockItems:
+          type: integer
+        pendingActivities:
+          type: integer
+        recentTransactions:
+          type: array
+          items:
+            $ref: "#/components/schemas/FinanceTransaction"
+        upcomingActivities:
+          type: array
+          items:
+            $ref: "#/components/schemas/Activity"
+      required:
+        - totalResidents
+        - activeResidents
+        - monthlyIncome
+        - monthlyExpenses
+        - monthlyBalance
+        - pendingPayments
+        - lowStockItems
+        - pendingActivities
+        - recentTransactions
+        - upcomingActivities
