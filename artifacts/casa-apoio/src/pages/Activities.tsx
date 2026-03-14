@@ -43,9 +43,9 @@ export function Activities() {
   const { data: activities } = useListActivities();
   const { data: residents } = useListResidents({ status: "active" });
 
-  const createMut = useCreateActivity({ onSuccess: () => invalidate() });
-  const updateMut = useUpdateActivity({ onSuccess: () => invalidate() });
-  const deleteMut = useDeleteActivity({ onSuccess: () => invalidate() });
+  const createMut = useCreateActivity({ mutation: { onSuccess: () => invalidate() } });
+  const updateMut = useUpdateActivity({ mutation: { onSuccess: () => invalidate() } });
+  const deleteMut = useDeleteActivity({ mutation: { onSuccess: () => invalidate() } });
 
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: getListActivitiesQueryKey() });
