@@ -3,17 +3,19 @@ import { db } from "@workspace/db";
 import { usersTable } from "@workspace/db/schema";
 import { eq } from "drizzle-orm";
 
-export function requireAuth(req: Request, res: Response, next: NextFunction) {
+export function requireAuth(req: Request, res: Response, next: NextFunction): void {
   if (!req.isAuthenticated()) {
-    return res.status(401).json({ error: "Não autenticado" });
+    res.status(401).json({ error: "Não autenticado" });
+    return;
   }
   next();
 }
 
 export function requireRole(...allowedRoles: string[]) {
-  return async (req: Request, res: Response, next: NextFunction) => {
+  return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     if (!req.isAuthenticated()) {
-      return res.status(401).json({ error: "Não autenticado" });
+      res.status(401).json({ error: "Não autenticado" });
+      return;
     }
 
     const userId = req.user!.id;
@@ -24,11 +26,13 @@ export function requireRole(...allowedRoles: string[]) {
       .limit(1);
 
     if (!user || !user.isActive) {
-      return res.status(403).json({ error: "Conta desativada" });
+      res.status(403).json({ error: "Conta desativada" });
+      return;
     }
 
     if (!allowedRoles.includes(user.role)) {
-      return res.status(403).json({ error: "Sem permissão" });
+      res.status(403).json({ error: "Sem permissão" });
+      return;
     }
 
     next();

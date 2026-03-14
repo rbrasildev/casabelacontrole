@@ -25,24 +25,28 @@ function formatUser(u: typeof usersTable.$inferSelect) {
   };
 }
 
-router.post("/", requireRole("admin"), async (req, res) => {
+router.post("/", requireRole("admin"), async (req, res): Promise<void> => {
   try {
     const { email, password, firstName, lastName, role } = req.body;
 
     if (!email || !password) {
-      return res.status(400).json({ error: "E-mail e senha são obrigatórios" });
+      res.status(400).json({ error: "E-mail e senha são obrigatórios" });
+      return;
     }
 
     if (typeof email !== "string" || !email.includes("@")) {
-      return res.status(400).json({ error: "E-mail inválido" });
+      res.status(400).json({ error: "E-mail inválido" });
+      return;
     }
 
     if (typeof password !== "string" || password.length < 6) {
-      return res.status(400).json({ error: "A senha deve ter pelo menos 6 caracteres" });
+      res.status(400).json({ error: "A senha deve ter pelo menos 6 caracteres" });
+      return;
     }
 
     if (role && !VALID_ROLES.includes(role)) {
-      return res.status(400).json({ error: "Cargo inválido" });
+      res.status(400).json({ error: "Cargo inválido" });
+      return;
     }
 
     const [existing] = await db
@@ -52,7 +56,8 @@ router.post("/", requireRole("admin"), async (req, res) => {
       .limit(1);
 
     if (existing) {
-      return res.status(409).json({ error: "Este e-mail já está cadastrado" });
+      res.status(409).json({ error: "Este e-mail já está cadastrado" });
+      return;
     }
 
     const passwordHash = await bcrypt.hash(password, 12);
@@ -88,7 +93,7 @@ router.get("/", async (_req, res) => {
   }
 });
 
-router.get("/:id", async (req, res) => {
+router.get("/:id", async (req, res): Promise<void> => {
   try {
     const [user] = await db
       .select()
@@ -96,7 +101,7 @@ router.get("/:id", async (req, res) => {
       .where(eq(usersTable.id, req.params.id))
       .limit(1);
 
-    if (!user) return res.status(404).json({ error: "Usuário não encontrado" });
+    if (!user) { res.status(404).json({ error: "Usuário não encontrado" }); return; }
     res.json(formatUser(user));
   } catch (err) {
     console.error("Error getting user:", err);
@@ -104,14 +109,15 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-router.put("/:id", async (req, res) => {
+router.put("/:id", async (req, res): Promise<void> => {
   try {
     const { role, isActive, firstName, lastName, email } = req.body;
     const updates: Record<string, unknown> = {};
 
     if (role !== undefined) {
       if (!VALID_ROLES.includes(role)) {
-        return res.status(400).json({ error: "Cargo inválido" });
+        res.status(400).json({ error: "Cargo inválido" });
+        return;
       }
       updates.role = role;
     }
@@ -121,7 +127,8 @@ router.put("/:id", async (req, res) => {
     if (typeof email === "string" || email === null) updates.email = email;
 
     if (Object.keys(updates).length === 0) {
-      return res.status(400).json({ error: "Nenhum campo para atualizar" });
+      res.status(400).json({ error: "Nenhum campo para atualizar" });
+      return;
     }
 
     const [user] = await db
@@ -130,7 +137,7 @@ router.put("/:id", async (req, res) => {
       .where(eq(usersTable.id, req.params.id))
       .returning();
 
-    if (!user) return res.status(404).json({ error: "Usuário não encontrado" });
+    if (!user) { res.status(404).json({ error: "Usuário não encontrado" }); return; }
     res.json(formatUser(user));
   } catch (err) {
     console.error("Error updating user:", err);
@@ -138,10 +145,11 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", async (req, res): Promise<void> => {
   try {
     if (req.params.id === req.user!.id) {
-      return res.status(400).json({ error: "Não é possível excluir sua própria conta" });
+      res.status(400).json({ error: "Não é possível excluir sua própria conta" });
+      return;
     }
 
     const [deleted] = await db
@@ -149,7 +157,7 @@ router.delete("/:id", async (req, res) => {
       .where(eq(usersTable.id, req.params.id))
       .returning();
 
-    if (!deleted) return res.status(404).json({ error: "Usuário não encontrado" });
+    if (!deleted) { res.status(404).json({ error: "Usuário não encontrado" }); return; }
     res.json({ success: true });
   } catch (err) {
     console.error("Error deleting user:", err);

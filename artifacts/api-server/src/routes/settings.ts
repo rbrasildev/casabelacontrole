@@ -1,8 +1,10 @@
 import { Router, type IRouter } from "express";
 import { db, settingsTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
+import { ObjectStorageService } from "../lib/objectStorage";
 
 const router: IRouter = Router();
+const objectStorageService = new ObjectStorageService();
 
 const SETTING_KEYS = [
   "org_name",
@@ -69,14 +71,10 @@ router.post("/upload-logo", async (req, res) => {
     const { type } = req.body;
     const settingKey = type === "favicon" ? "org_favicon" : "org_logo";
 
-    const { createPresignedUploadUrl } = await import("@replit/object-storage");
-    const { ok, url, objectPath } = await createPresignedUploadUrl();
-    if (!ok || !url) {
-      res.status(500).json({ error: "Falha ao gerar URL de upload" });
-      return;
-    }
+    const uploadUrl = await objectStorageService.getObjectEntityUploadURL();
+    const objectPath = objectStorageService.normalizeObjectEntityPath(uploadUrl);
 
-    res.json({ uploadUrl: url, objectPath, settingKey });
+    res.json({ uploadUrl, objectPath, settingKey });
   } catch (e) {
     res.status(500).json({ error: String(e) });
   }

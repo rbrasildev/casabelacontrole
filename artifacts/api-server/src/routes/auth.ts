@@ -12,9 +12,10 @@ import {
 
 const router: IRouter = Router();
 
-router.get("/auth/user", async (req: Request, res: Response) => {
+router.get("/auth/user", async (req: Request, res: Response): Promise<void> => {
   if (!req.isAuthenticated()) {
-    return res.json({ user: null });
+    res.json({ user: null });
+    return;
   }
 
   const [dbUser] = await db
@@ -24,7 +25,8 @@ router.get("/auth/user", async (req: Request, res: Response) => {
     .limit(1);
 
   if (!dbUser) {
-    return res.json({ user: null });
+    res.json({ user: null });
+    return;
   }
 
   res.json({
@@ -39,9 +41,10 @@ router.get("/auth/user", async (req: Request, res: Response) => {
   });
 });
 
-router.get("/auth/me", async (req: Request, res: Response) => {
+router.get("/auth/me", async (req: Request, res: Response): Promise<void> => {
   if (!req.isAuthenticated()) {
-    return res.status(401).json({ error: "Não autenticado" });
+    res.status(401).json({ error: "Não autenticado" });
+    return;
   }
 
   const [dbUser] = await db
@@ -51,7 +54,8 @@ router.get("/auth/me", async (req: Request, res: Response) => {
     .limit(1);
 
   if (!dbUser) {
-    return res.status(404).json({ error: "Usuário não encontrado" });
+    res.status(404).json({ error: "Usuário não encontrado" });
+    return;
   }
 
   res.json({
@@ -65,12 +69,13 @@ router.get("/auth/me", async (req: Request, res: Response) => {
   });
 });
 
-router.post("/auth/login", async (req: Request, res: Response) => {
+router.post("/auth/login", async (req: Request, res: Response): Promise<void> => {
   try {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res.status(400).json({ error: "E-mail e senha são obrigatórios" });
+      res.status(400).json({ error: "E-mail e senha são obrigatórios" });
+      return;
     }
 
     const [user] = await db
@@ -80,16 +85,19 @@ router.post("/auth/login", async (req: Request, res: Response) => {
       .limit(1);
 
     if (!user) {
-      return res.status(401).json({ error: "E-mail ou senha incorretos" });
+      res.status(401).json({ error: "E-mail ou senha incorretos" });
+      return;
     }
 
     if (!user.isActive) {
-      return res.status(403).json({ error: "Conta desativada. Contate o administrador." });
+      res.status(403).json({ error: "Conta desativada. Contate o administrador." });
+      return;
     }
 
     const valid = await bcrypt.compare(password, user.passwordHash);
     if (!valid) {
-      return res.status(401).json({ error: "E-mail ou senha incorretos" });
+      res.status(401).json({ error: "E-mail ou senha incorretos" });
+      return;
     }
 
     const sessionData: SessionData = {
